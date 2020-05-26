@@ -1,0 +1,134 @@
+object Form1: TForm1
+  Left = 196
+  Height = 73
+  Top = 131
+  Width = 233
+  AutoSize = True
+  BorderStyle = bsSingle
+  Caption = 'Form1'
+  ClientHeight = 48
+  ClientWidth = 233
+  Color = clBtnFace
+  DesignTimePPI = 98
+  Font.Color = clWindowText
+  Font.Height = -11
+  Font.Name = 'MS Sans Serif'
+  Menu = MainMenu1
+  OnClose = FormClose
+  OnCreate = FormCreate
+  OnShow = FormShow
+  Position = poMainFormCenter
+  LCLVersion = '2.0.0.4'
+  object Label1: TLabel
+    Left = 200
+    Height = 13
+    Top = 8
+    Width = 25
+    AutoSize = False
+    Caption = '0'
+    Font.Color = clWindowText
+    Font.Height = -11
+    Font.Name = 'MS Sans Serif'
+    ParentColor = False
+    ParentFont = False
+  end
+  object Label2: TLabel
+    Left = 106
+    Height = 13
+    Top = 8
+    Width = 32
+    AutoSize = False
+    Caption = 'Mines:'
+    Font.Color = clWindowText
+    Font.Height = -11
+    Font.Name = 'MS Sans Serif'
+    ParentColor = False
+    ParentFont = False
+  end
+  object Label3: TLabel
+    Left = 138
+    Height = 13
+    Top = 8
+    Width = 25
+    AutoSize = False
+    Caption = 'Label3'
+    Font.Color = clWindowText
+    Font.Height = -11
+    Font.Name = 'MS Sans Serif'
+    ParentColor = False
+    ParentFont = False
+  end
+  object Label4: TLabel
+    Left = 172
+    Height = 14
+    Top = 8
+    Width = 32
+    Caption = 'Time:'
+    Font.Color = clWindowText
+    Font.Height = -11
+    Font.Name = 'MS Sans Serif'
+    ParentColor = False
+    ParentFont = False
+  end
+  object Button1: TButton
+    Left = 0
+    Height = 25
+    Top = 0
+    Width = 51
+    Caption = 'New'
+    Font.Color = clWindowText
+    Font.Height = -11
+    Font.Name = 'MS Sans Serif'
+    OnClick = Button1Click
+    ParentFont = False
+    TabOrder = 0
+  end
+  object Button2: TButton
+    Left = 52
+    Height = 25
+    Top = 0
+    Width = 51
+    Caption = 'Pause'
+    Font.Color = clWindowText
+    Font.Height = -11
+    Font.Name = 'MS Sans Serif'
+    OnClick = Button2Click
+    ParentFont = False
+    TabOrder = 1
+  end
+  object Timer1: TTimer
+    OnTimer = Timer1Timer
+    left = 8
+  end
+  object MainMenu1: TMainMenu
+    left = 58
+    object N1: TMenuItem
+      Caption = 'Options'
+      object NewProfile1: TMenuItem
+        Caption = 'New Profile'
+        OnClick = NewProfile1Click
+      end
+      object LoadProfile1: TMenuItem
+        Caption = 'Load Profile'
+        OnClick = loadprofile
+      end
+      object safeprofile1: TMenuItem
+        Caption = 'Save Profile'
+        Enabled = False
+      end
+      object TOP111: TMenuItem
+        Caption = 'TOP 11'
+        OnClick = TOP111Click
+      end
+    end
+    object N2: TMenuItem
+      Caption = 'Exit'
+      OnClick = N2Click
+    end
+  end
+  object OpenDialog1: TOpenDialog
+    Title = 'Open Profile'
+    Filter = 'Sixer Profiles|*.six'
+    left = 130
+  end
+end

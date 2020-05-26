@@ -1,0 +1,41 @@
+object Form2: TForm2
+  Left = 470
+  Height = 353
+  Top = 117
+  Width = 213
+  AutoSize = True
+  BorderStyle = bsSingle
+  Caption = 'Form2'
+  ClientHeight = 353
+  ClientWidth = 213
+  Color = clBtnFace
+  Font.Color = clWindowText
+  Font.Height = -11
+  Font.Name = 'MS Sans Serif'
+  OnShow = FormShow
+  LCLVersion = '2.0.8.0'
+  object StringGrid1: TStringGrid
+    Left = 0
+    Height = 278
+    Top = 0
+    Width = 205
+    ColCount = 2
+    DefaultColWidth = 100
+    FixedCols = 0
+    FixedRows = 0
+    RowCount = 11
+    ScrollBars = ssNone
+    TabOrder = 0
+  end
+  object Button1: TButton
+    Left = 8
+    Height = 25
+    Top = 288
+    Width = 75
+    Cancel = True
+    Caption = 'OK'
+    Default = True
+    OnClick = Button1Click
+    TabOrder = 1
+  end
+end
