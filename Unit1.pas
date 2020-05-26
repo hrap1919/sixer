@@ -1,10 +1,12 @@
 unit Unit1;
 
+{$MODE Delphi}
+
 interface
 
 uses
-  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs,mines, ExtCtrls, StdCtrls, Menus;
+  LCLIntf, LCLType, LMessages, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
+  Dialogs,MINES, ExtCtrls, StdCtrls, Menus;
 
 type
     TPR=record
@@ -79,11 +81,11 @@ var
 
 implementation
 
-{$R *.dfm}
+{$R *.lfm}
 
 //type
 
-uses unit2;
+uses Unit2;
 
 const
 //n1=30; n2=30; //size=15;
@@ -92,11 +94,13 @@ const
 //destnm=(nn1+1)*(nn2+1) div 6;
 //destnm=n1*n2;
 //destnm=1;
-      rr=20;
+       rr=20;
       rx=18;
       ry=10;
-      digitoffsetx=6;
-      digitoffsety=12;
+      digitoffsetx=7;
+      digitoffsety=16;
+      fontsize=18;
+      touch=0;
 var
 
 fpr: file of TPR;
@@ -245,8 +249,7 @@ begin
 p.canvas.Polygon([Point(aa,bb+rr),Point(aa+rx,bb+ry),Point(aa+rx,bb-ry),
 Point(aa,bb-rr),Point(aa-rx,bb-ry),
 Point(aa-rx,bb+ry)]);
-//p.canvas.TextOut(aa-3,bb-6,d);
-   p.canvas.TextOut(aa-digitoffsetx,bb-digitoffsety,d);
+p.canvas.TextOut(aa-digitoffsetx,bb-digitoffsety,d);
 p.canvas.Polyline([Point(aa,bb+rr),Point(aa+rx,bb+ry),Point(aa+rx,bb-ry),
 Point(aa,bb-rr),Point(aa-rx,bb-ry),
 Point(aa-rx,bb+ry),Point(aa,bb+rr)]);
@@ -384,7 +387,6 @@ procedure TForm1.Image1MouseDown(Sender: TObject; Button: TMouseButton;
   Shift: TShiftState; X, Y: Integer);
 var i,j,s:integer; xx:Morbit;
 begin
-
 if game=0 then
 begin
 //setcapture(form1.Handle);
@@ -433,7 +435,6 @@ procedure TForm1.Image1MouseUp(Sender: TObject; Button: TMouseButton;
   Shift: TShiftState; X, Y: Integer);
 var i,j:integer; xx:Morbit;
 begin
-
 if game=0 then
 begin
 {j:=y div size; if j>n2 then j:=n2;
@@ -462,14 +463,13 @@ if (i>=0) and (i<=nn1) and (j>=0) and (j<=nn2) then
    xx:=xx.next;
    end;
    if (ar[i,j].state=true) then ar[i,j].klik;
-   if ((mbleft = button) and  (shift=[]) or  (mbright = button) and (shift=[sstouch])) and (ar[i,j].state=false)
+   if ((touch = 0) and (mbleft = button) or (touch = 1) and (mbright = button)) and  (shift=[]) and (ar[i,j].state=false)
    and (ar[i,j].flag=false)
    then if  ar[i,j].open then ar[i,j].klik;
-    if  ((mbright = button) and  (shift=[]) or  (mbleft = button) and (shift=[sstouch])) and (ar[i,j].state=false)
+    if ((touch = 0) and (mbright = button) or (touch = 1) and (mbleft = button)) and (shift=[])and (ar[i,j].state=false)
     then
     begin ar[i,j].flag:=not ar[i,j].flag; ar[i,j].show;
     end;
-
 end;
 end;
 end;
@@ -510,6 +510,7 @@ closefile(fpr);
 
 p:=Timage.Create(Form1);
 p.Top:=30;p.Left:=1;
+//p.Canvas.Brush.Color:=clWhite;
 //p.Canvas.moveto((n1+1)*2*rx+rx,0);
 //p.Canvas.lineto((n1+1)*2*rx+rx,244);
 //p.Canvas.moveto(0,(n2+1)*3*ry+ry);
@@ -517,6 +518,8 @@ p.Top:=30;p.Left:=1;
 
 p.Height:=(nn2+1)*3*ry+ry;
 p.Width:=(nn1+1)*2*rx+rx;
+p.Canvas.Brush.Color:=clWhite;
+p.canvas.FillRect(Rect(1,1,p.Width,p.Height));
 if sender=form1 then
 begin
 form1.Left:=(screen.DesktopWidth div 2)-(p.Width div 2);
@@ -524,7 +527,7 @@ form1.Top:=(screen.DesktopHeight div 2) -(p.Height div 2);
 end;
 p.canvas.brush.Color:=clbtnface;
 p.Canvas.Font.Style:=[fsbold];
-p.Canvas.Font.Size:=16;
+p.Canvas.Font.Size:=fontsize;
 //p.canvas.FillRect(Rect(1,1,(n1+1)*size+1,(n2+1)*size+1));
 p.canvas.brush.Color:=clwhite;
 p.Parent:=form1;
@@ -716,6 +719,8 @@ if champ then
 begin
 f:=Tform.Create(form1);
 f.Icon:=form1.Icon;
+f.BorderStyle:=bsSingle;
+f.AutoSize:=true;
 e1:=Tedit.Create(f);
 b1:=Tbutton.Create(f);
 l1:=Tlabel.Create(f);
@@ -868,7 +873,8 @@ end;
 procedure TForm1.FormCreate(Sender: TObject);
 begin
 destnm:=(nn1+1)*(nn2+1) div 6;
-GetCurrentDirectory(SizeOf(CurrentDirectory), CurrentDirectory);
+//GetCurrentDirectory(SizeOf(CurrentDirectory), CurrentDirectory);
+CurrentDirectory:=ExtractFileDir(Application.ExeName);//GetCurrentDir;
 opendialog1.InitialDir:=CurrentDirectory+'\Profiles';
 end;
 

@@ -1,0 +1,109 @@
+object Form1: TForm1
+  Left = 196
+  Height = 71
+  Top = 131
+  Width = 229
+  AutoSize = True
+  BorderStyle = bsSingle
+  Caption = 'Form1'
+  ClientHeight = 51
+  ClientWidth = 229
+  Color = clBtnFace
+  Font.Color = clWindowText
+  Font.Height = -11
+  Font.Name = 'MS Sans Serif'
+  Menu = MainMenu1
+  OnClose = FormClose
+  OnCreate = FormCreate
+  OnShow = FormShow
+  Position = poMainFormCenter
+  LCLVersion = '2.0.8.0'
+  object Label1: TLabel
+    Left = 196
+    Height = 13
+    Top = 8
+    Width = 25
+    AutoSize = False
+    Caption = '0'
+    ParentColor = False
+  end
+  object Label2: TLabel
+    Left = 104
+    Height = 13
+    Top = 8
+    Width = 32
+    AutoSize = False
+    Caption = 'Mines:'
+    ParentColor = False
+  end
+  object Label3: TLabel
+    Left = 136
+    Height = 13
+    Top = 8
+    Width = 25
+    AutoSize = False
+    Caption = 'Label3'
+    ParentColor = False
+  end
+  object Label4: TLabel
+    Left = 168
+    Height = 13
+    Top = 8
+    Width = 26
+    Caption = 'Time:'
+    ParentColor = False
+  end
+  object Button1: TButton
+    Left = 0
+    Height = 25
+    Top = 0
+    Width = 49
+    Caption = 'New'
+    OnClick = Button1Click
+    TabOrder = 0
+  end
+  object Button2: TButton
+    Left = 50
+    Height = 25
+    Top = 0
+    Width = 49
+    Caption = 'Pause'
+    OnClick = Button2Click
+    TabOrder = 1
+  end
+  object Timer1: TTimer
+    OnTimer = Timer1Timer
+    left = 8
+  end
+  object MainMenu1: TMainMenu
+    left = 56
+    object N1: TMenuItem
+      Caption = 'Options'
+      object NewProfile1: TMenuItem
+        Caption = 'New Profile'
+        OnClick = NewProfile1Click
+      end
+      object LoadProfile1: TMenuItem
+        Caption = 'Load Profile'
+        OnClick = loadprofile
+      end
+      object safeprofile1: TMenuItem
+        Caption = 'Save Profile'
+        Enabled = False
+      end
+      object TOP111: TMenuItem
+        Caption = 'TOP 11'
+        OnClick = TOP111Click
+      end
+    end
+    object N2: TMenuItem
+      Caption = 'Exit'
+      OnClick = N2Click
+    end
+  end
+  object OpenDialog1: TOpenDialog
+    Title = 'Open Profile'
+    Filter = 'Sixer Profiles|*.six'
+    left = 128
+  end
+end

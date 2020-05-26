@@ -1,4 +1,6 @@
-unit mines;
+unit MINES;
+
+{$MODE Delphi}
 
 interface
 //uses
@@ -9,7 +11,8 @@ type
 Morbit=class(TObject)
          away:TObject;
          next:Morbit;
-         class function New(aaway:tobject):Morbit;
+         //class function New(aaway:tobject):Morbit;
+         constructor New(aaway:tobject);
          procedure add(aaway:tobject);
          class procedure clear(orbit:Morbit);
         end;
@@ -21,7 +24,7 @@ Mcell=class(Tobject)
        proved:boolean;
        num,mines:integer;
        around:Morbit;
-       class function New(ismine,isstate:boolean):Mcell;
+       constructor New(ismine,isstate:boolean);
        procedure addenv(cell:Mcell);
        class procedure clear(cell:Mcell);
        function open:boolean;
@@ -32,10 +35,10 @@ Mcell=class(Tobject)
 
 implementation
 
-class function Morbit.New(aaway:tobject):Morbit;
-var x:Morbit;
+constructor Morbit.New(aaway:tobject);
+//var x:Morbit;
 begin
-x:=inherited Create; x.next:=nil; x.away:=aaway; result:=x;
+inherited Create; self.next:=nil; self.away:=aaway;
 end;
 
 procedure Morbit.add(aaway:tobject);
@@ -60,18 +63,18 @@ x:=y
 end;
 end;
 
-class function Mcell.New(ismine,isstate:boolean):Mcell;
-var x:Mcell;
+constructor Mcell.New(ismine,isstate:boolean);
+//var x:Mcell;
 begin
-x:=inherited Create; 
-x.mine:=ismine;
-x.state:=isstate;
-x.mines:=0;
-x.around:=nil;
-x.flag:=false;
-x.proved:=false;
-x.num:=0;
-result:=x;
+inherited Create;
+self.mine:=ismine;
+self.state:=isstate;
+self.mines:=0;
+self.around:=nil;
+self.flag:=false;
+self.proved:=false;
+self.num:=0;
+//result:=x;
 end;
 
 procedure Mcell.addenv(cell:Mcell);
