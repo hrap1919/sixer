@@ -8,13 +8,32 @@ uses
   LCLIntf, LCLType, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs,MINES, ExtCtrls, StdCtrls, Menus;
 
+const
+     // Size parameters of cells
+     rr=20;
+     rx=18;
+     ry=10;
+     // Offest parameters for digits
+     digitoffsetx=7;  //Linux =8
+     digitoffsety=16; //Linux =14
+     // Size of digits
+     fontsize=18;
+     // Set touch=1 to inverst left and right mouse clicks
+     touch=0;
+     // Set separator='/' for Linux
+     separator='\';
+     FormDy=20; // addition for correct window height, Linux =28  ?
+     FieldTop=30; //play field Y-coordinate
+
 type
+
     TPR=record
-       Name:string[15];
-        case byte of
-          0: (width,height:byte;mines:word;);
-          1: (time:integer;)
-          end;
+              Name:string[15];
+              case byte of
+                   0: (width,height:byte;mines:word;);
+                   1: (time:integer;)
+              end;
+
 
     Mcell1=class(Mcell)
       aa,bb:integer; // physical coordinates
@@ -80,18 +99,6 @@ implementation
 
 uses Unit2;
 
-const
-     // Size parameters of cells
-     rr=20;
-     rx=18;
-     ry=10;
-     // Offest parameters for digits
-     digitoffsetx=7;
-     digitoffsety=16;
-     // Size of digits
-     fontsize=18;
-     // Set touch=1 to inverst left and right mouse clicks
-     touch=0;
 var
 
 fpr: file of TPR;
@@ -125,24 +132,24 @@ procedure TForm1.FormCreate(Sender: TObject);
 begin
 destnm:=(nn1+1)*(nn2+1) div 6;
 CurrentDirectory:=ExtractFileDir(Application.ExeName);//GetCurrentDir;
-opendialog1.InitialDir:=CurrentDirectory+'\Profiles';
+opendialog1.InitialDir:=CurrentDirectory+separator+'Profiles';
 end;
 
 procedure TForm1.FormShow(Sender: TObject);
 var Tx:textfile;
 begin
      p:=nil;
-     if FileExists(currentdirectory+'\Profiles\last')
+     if FileExists(currentdirectory+separator+'Profiles'+separator+'last')
         then
             begin
-                 assignfile(Tx,currentdirectory+'\Profiles\last');
+                 assignfile(Tx,currentdirectory+separator+'Profiles'+separator+'last');
                  reset(Tx);
                            readln(Tx,curprofilename);
                  closefile(Tx);
                  if not FileExists(curprofilename)
-                    then curprofilename:=currentdirectory+'\Profiles\Beginner.six';
+                    then curprofilename:=currentdirectory+separator+'Profiles'+separator+'Beginner.six';
             end
-        else curprofilename:=currentdirectory+'\Profiles\Beginner.six';
+        else curprofilename:=currentdirectory+separator+'Profiles'+separator+'Beginner.six';
         assignfile(fpr,curprofilename);
         reset(fpr);
                    read(fpr,rec)  ;
@@ -176,7 +183,7 @@ begin
      setlength(mm,nn1+1,nn2+1);
      game:=0;
 
-     assignfile(fpr,{currentdirectory+'\Profiles\'+}curprofilename);
+     assignfile(fpr,curprofilename);
      reset(fpr);
                 button2.Caption:='Pause';
                 read(fpr,rec);
@@ -185,11 +192,13 @@ begin
 
      //creating Timage control
      p:=Timage.Create(Form1);
-     p.Top:=30;p.Left:=1;
+     p.Top:=FieldTop;p.Left:=1;
      p.Height:=(nn2+1)*3*ry+ry;
      p.Width:=(nn1+1)*2*rx+rx;
      p.Canvas.Brush.Color:=clWhite;
      p.canvas.FillRect(Rect(1,1,p.Width,p.Height));
+     form1.Width:=p.Left+p.Width;
+     form1.Height:=FormDy+p.Top+p.Height;
      if sender=form1 then
      begin
           form1.Left:=(screen.DesktopWidth div 2)-(p.Width div 2);
@@ -674,7 +683,7 @@ champ:boolean;ix,jx,kx:integer;
 ar:array [0..10] of TPr;
 begin
      timer1.Enabled:=false;
-     assignfile(fpr,{currentdirectory+'\Profiles\'+}curprofilename);
+     assignfile(fpr,curprofilename);
      reset(fpr);
                 read(fpr,rec1);
                 ix:=0;
@@ -807,7 +816,7 @@ begin
      if newprofileresult=1
       then
        begin
-        curprofilename:=currentdirectory+'\Profiles\temp.tmp';
+        curprofilename:=currentdirectory+separator+'Profiles'+separator+'temp.tmp';
         assignfile(fpr,curprofilename);
         rewrite(fpr);
          try
@@ -871,7 +880,7 @@ begin
          form2.StringGrid1.Cells[1,ix]:='';
      if not paused
         then button2.Click; //Click Pause
-     assignfile(fpr,{currentdirectory+'\Profiles\'+}curprofilename);
+     assignfile(fpr,curprofilename);
      reset(fpr);
         read(fpr,rec);
         form2.Caption:='TOP 11: '+rec.Name;
@@ -894,7 +903,7 @@ var Tx:Textfile;
 begin
      if p<>nil
         then ClearField;
-     assignfile(Tx,currentdirectory+'\Profiles\last');
+     assignfile(Tx,currentdirectory+separator+'Profiles'+separator+'last');
      rewrite(Tx);
                  writeln(Tx,curprofilename);
      closefile(Tx);
