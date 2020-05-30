@@ -5,8 +5,8 @@ unit Unit2;
 interface
 
 uses
-  LCLIntf, LCLType, LMessages, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, Grids, StdCtrls, Unit1;
+  LCLIntf, LCLType, SysUtils, Variants, Classes, Graphics, Controls, Forms,
+  Dialogs, Grids, StdCtrls;
 
 type
   TForm2 = class(TForm)
@@ -29,12 +29,12 @@ implementation
 
 procedure TForm2.Button1Click(Sender: TObject);
 begin
-form2.close;
+     form2.close;
 end;
 
 procedure TForm2.FormShow(Sender: TObject);
 begin
-form2.FocusControl(button1);
+     form2.FocusControl(button1);
 end;
 
 end.
