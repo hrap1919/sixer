@@ -81,12 +81,16 @@ implementation
 uses Unit2;
 
 const
+     // Size parameters of cells
      rr=20;
      rx=18;
      ry=10;
+     // Offest parameters for digits
      digitoffsetx=7;
      digitoffsety=16;
+     // Size of digits
      fontsize=18;
+     // Set touch=1 to inverst left and right mouse clicks
      touch=0;
 var
 
@@ -95,17 +99,17 @@ rec:Tpr;
 momentnumber:integer;  //temp number for mouse
 momentflag:boolean ;  //temp flag for mouse
 
-CurrentDirectory: array[0..MAX_PATH] of Char;
-newprofileresult:integer;
-curprofilename:string;
+CurrentDirectory: array[0..MAX_PATH] of Char;   //path of exe-file
+newprofileresult:integer; // result of selecting profile
+curprofilename:string;  // current profile
 
 nn1:integer=17;   //columns
 nn2:integer=16;   //rows
 oldnn1,oldnn2:integer; //previous columns and rows
-destnm:integer;
+destnm:integer;    // number of mines
 pressed:Mcell1; // pressed cell
 paused:boolean;
-ar:array of array of Mcell1;
+ar:array of array of Mcell1;  // array of cells
 mm:array of array of boolean; //array of bomb/not bomb
 p:Timage=nil;  // the image of the game field
 game:integer; //game is active if flag=0
