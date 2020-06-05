@@ -3,6 +3,7 @@ object Form1: TForm1
   Height = 71
   Top = 131
   Width = 229
+  BorderIcons = [biSystemMenu, biMinimize]
   BorderStyle = bsSingle
   Caption = 'Form1'
   ClientHeight = 51
