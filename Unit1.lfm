@@ -1,13 +1,13 @@
 object Form1: TForm1
-  Left = 196
-  Height = 71
-  Top = 131
-  Width = 229
+  Left = 180
+  Height = 276
+  Top = 293
+  Width = 450
   BorderIcons = [biSystemMenu, biMinimize]
   BorderStyle = bsSingle
   Caption = 'Form1'
-  ClientHeight = 51
-  ClientWidth = 229
+  ClientHeight = 256
+  ClientWidth = 450
   Color = clBtnFace
   Font.Color = clWindowText
   Font.Height = -11
@@ -25,7 +25,11 @@ object Form1: TForm1
     Width = 25
     AutoSize = False
     Caption = '0'
+    Font.Color = clWindowText
+    Font.Height = -11
+    Font.Name = 'MS Sans Serif'
     ParentColor = False
+    ParentFont = False
   end
   object Label2: TLabel
     Left = 104
@@ -34,7 +38,11 @@ object Form1: TForm1
     Width = 32
     AutoSize = False
     Caption = 'Mines:'
+    Font.Color = clWindowText
+    Font.Height = -11
+    Font.Name = 'MS Sans Serif'
     ParentColor = False
+    ParentFont = False
   end
   object Label3: TLabel
     Left = 136
@@ -43,7 +51,11 @@ object Form1: TForm1
     Width = 25
     AutoSize = False
     Caption = 'Label3'
+    Font.Color = clWindowText
+    Font.Height = -11
+    Font.Name = 'MS Sans Serif'
     ParentColor = False
+    ParentFont = False
   end
   object Label4: TLabel
     Left = 168
@@ -51,7 +63,11 @@ object Form1: TForm1
     Top = 8
     Width = 26
     Caption = 'Time:'
+    Font.Color = clWindowText
+    Font.Height = -11
+    Font.Name = 'MS Sans Serif'
     ParentColor = False
+    ParentFont = False
   end
   object Button1: TButton
     Left = 0
@@ -59,7 +75,11 @@ object Form1: TForm1
     Top = 0
     Width = 49
     Caption = 'New'
+    Font.Color = clWindowText
+    Font.Height = -11
+    Font.Name = 'MS Sans Serif'
     OnClick = Button1Click
+    ParentFont = False
     TabOrder = 0
   end
   object Button2: TButton
@@ -68,7 +88,11 @@ object Form1: TForm1
     Top = 0
     Width = 49
     Caption = 'Pause'
+    Font.Color = clWindowText
+    Font.Height = -11
+    Font.Name = 'MS Sans Serif'
     OnClick = Button2Click
+    ParentFont = False
     TabOrder = 1
   end
   object Timer1: TTimer
@@ -95,10 +119,18 @@ object Form1: TForm1
         Caption = 'TOP 11'
         OnClick = TOP111Click
       end
-    end
-    object N2: TMenuItem
-      Caption = 'Exit'
-      OnClick = N2Click
+      object MenuItem2: TMenuItem
+        Caption = 'Zoom In'
+        OnClick = MenuItem2Click
+      end
+      object MenuItem3: TMenuItem
+        Caption = 'Zoom Out'
+        OnClick = MenuItem3Click
+      end
+      object MenuItem1: TMenuItem
+        Caption = 'Exit'
+        OnClick = N2Click
+      end
     end
   end
   object OpenDialog1: TOpenDialog

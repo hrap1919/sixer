@@ -9,21 +9,16 @@ uses
   Dialogs,MINES, ExtCtrls, StdCtrls, Menus;
 
 const
-     // Size parameters of cells
-     rr=20;
-     rx=18;
-     ry=10;
-     // Offest parameters for digits
-     digitoffsetx=7;  //Linux =8
-     digitoffsety=16; //Linux =14
-     // Size of digits
-     fontsize=18;
+
+
+     //ry=ry div 10;
+
      // Set touch=1 to inverst left and right mouse clicks
      touch=0;
      // Set separator='/' for Linux
      separator='\';
-     FormDy=20; // addition for correct window height, Linux =28  ?
-     FieldTop=30; //play field Y-coordinate
+     FormDy=30; // addition for correct window height, Linux =28  ?
+     FieldTop=30; //play field Y-cooryinate
 
 type
 
@@ -36,13 +31,15 @@ type
 
 
     Mcell1=class(Mcell)
-      aa,bb:integer; // physical coordinates
+      aa,bb:integer; // physical cooryinates
       light:boolean;   // red light on during mouse movement
-       procedure preshow(d:string);
+       procedure preshow(d:char;c:TColor);
      procedure show; override;
      procedure decreasenum;   override;
      procedure show1(sw:boolean); //show and hide red hints on the field
   end;
+
+  { TForm1 }
 
   TForm1 = class(TForm)
     Button1: TButton;
@@ -50,10 +47,12 @@ type
     Label2: TLabel;
     Label3: TLabel;
     Button2: TButton;
+    MenuItem1: TMenuItem;
+    MenuItem2: TMenuItem;
+    MenuItem3: TMenuItem;
     Timer1: TTimer;
     MainMenu1: TMainMenu;
     N1: TMenuItem;
-    N2: TMenuItem;
     NewProfile1: TMenuItem;
     safeprofile1: TMenuItem;
     LoadProfile1: TMenuItem;
@@ -69,6 +68,8 @@ type
       Y: Integer);
     procedure Button1Click(Sender: TObject);
     procedure FormShow(Sender: TObject);
+    procedure MenuItem2Click(Sender: TObject);
+    procedure MenuItem3Click(Sender: TObject);
     procedure Timer1Timer(Sender: TObject);
     procedure Button2Click(Sender: TObject);
     procedure win;
@@ -97,7 +98,7 @@ implementation
 
 {$R *.lfm}
 
-uses Unit2;
+uses Unit2,Drawing;
 
 var
 
@@ -109,6 +110,16 @@ momentflag:boolean ;  //temp flag for mouse
 CurrentDirectory: array[0..MAX_PATH] of Char;   //path of exe-file
 newprofileresult:integer; // result of selecting profile
 curprofilename:string;  // current profile
+
+
+// Size parameters of cells
+
+ry:integer=10;
+rx:integer=18;
+rr:integer=20;
+//rr=2*ry;
+//rx=9*ry div 5;
+
 
 nn1:integer=17;   //columns
 nn2:integer=16;   //rows
@@ -160,9 +171,59 @@ begin
         caption:=rec.Name;
         form1.Button1Click(form1);
 end;
+
+
+//Redraw the Timage p with cells
+
+procedure Redraw;
+var i2,j2:integer;
+begin
+     if p<>nil
+        then p.Destroy;
+     rr:=2*ry;
+     rx:=9*ry div 5;
+     p:=Timage.Create(Form1);
+     p.Top:=FieldTop;p.Left:=1;
+     p.Height:=(nn2+1)*3*ry+ry;
+     p.Width:=(nn1+1)*2*rx+rx;
+     form1.Width:=p.Left+p.Width;
+     form1.Height:=FormDy+p.Top+p.Height;
+     p.Visible:=not paused;
+     p.Parent:=form1;
+     p.OnMouseDown:=form1.Image1MouseDown;
+     p.OnMouseUp:=form1.Image1MouseUp;
+     p.OnMousemove:=form1.Image1Mousemove;
+     p.Canvas.Brush.Color:=clWhite;
+     p.canvas.FillRect(Rect(1,1,p.Width,p.Height));
+     p.canvas.brush.Color:=clbtnface;
+     for i2:=0 to nn1 do
+         for j2:=0 to nn2 do
+             begin
+                  if j2 mod 2=0
+                     then ar[i2,j2].aa:=rx+2*rx*i2
+                     else ar[i2,j2].aa:=rx+rx+2*rx*i2;
+                  ar[i2,j2].bb:=2*ry+(3*ry)*j2;
+                  ar[i2,j2].show1(true);
+                  ar[i2,j2].light:=false;
+             end;
+end;
+
+procedure TForm1.MenuItem2Click(Sender: TObject);
+begin
+     if ry<=27 then ry:=ry+2;
+     Redraw;
+
+end;
+
+procedure TForm1.MenuItem3Click(Sender: TObject);
+begin
+  if ry>=8 then ry:=ry-2;
+  Redraw
+end;
+
 //
 
-//Creating and destroying p:Timage and the associated array of Mcell
+//Creating and destroying array of Mcell
 
 procedure ClearField;
 var i,j:integer;
@@ -170,7 +231,6 @@ begin
      for i:=0 to oldnn1 do
          for j:=0 to oldnn2 do
              Mcell1.clear(ar[i,j]);
-     p.Destroy;
 end;
 
 procedure TForm1.Button1Click(Sender: TObject);
@@ -178,42 +238,17 @@ var i2,j2,k2,l2:integer;
 begin
      if p<>nil
         then ClearField;
+        rr:=2*ry;
+        rx:=9*ry div 5;
      oldnn1:=nn1;oldnn2:=nn2;
      setlength(ar,nn1+1,nn2+1);
      setlength(mm,nn1+1,nn2+1);
-     game:=0;
 
      assignfile(fpr,curprofilename);
      reset(fpr);
-                button2.Caption:='Pause';
                 read(fpr,rec);
                 form1.Caption:=rec.Name;
      closefile(fpr);
-
-     //creating Timage control
-     p:=Timage.Create(Form1);
-     p.Top:=FieldTop;p.Left:=1;
-     p.Height:=(nn2+1)*3*ry+ry;
-     p.Width:=(nn1+1)*2*rx+rx;
-     p.Canvas.Brush.Color:=clWhite;
-     p.canvas.FillRect(Rect(1,1,p.Width,p.Height));
-     form1.Width:=p.Left+p.Width;
-     form1.Height:=FormDy+p.Top+p.Height;
-     if sender=form1 then
-     begin
-          form1.Left:=(screen.DesktopWidth div 2)-(p.Width div 2);
-          form1.Top:=(screen.DesktopHeight div 2) -(p.Height div 2);
-     end;
-     p.canvas.brush.Color:=clbtnface;
-     p.Canvas.Font.Style:=[fsbold];
-     p.Canvas.Font.Size:=fontsize;
-     p.canvas.brush.Color:=clwhite;
-     p.Parent:=form1;
-     p.OnMouseDown:=form1.Image1MouseDown;
-     p.OnMouseUp:=form1.Image1MouseUp;
-     p.OnMousemove:=form1.Image1Mousemove;
-     label1.Caption:='0';
-     //
 
      //stupid randomization of bombs
      randomize;
@@ -236,7 +271,7 @@ begin
      end;
      //
 
-     //connecting the cells
+     //creating the cells
      for i2:=0 to nn1 do
          for j2:=0 to nn2 do
              begin
@@ -247,26 +282,30 @@ begin
                               ar[i2,j2]:=Mcell1(Mcell1.New(true,false));
                               nummin:=nummin+1;
                          end;
-                  if j2 mod 2=0
-                     then ar[i2,j2].aa:=rx+2*rx*i2
-                     else ar[i2,j2].aa:=rx+rx+2*rx*i2;
-                  ar[i2,j2].bb:=2*ry+(3*ry)*j2;
-                  //ar[i2,j2].ingame:=true;
-                  ar[i2,j2].show1(true);
-                  ar[i2,j2].light:=false;
              end;
+
      pressed:=ar[nn1,nn2];
      numcl:=(nn1+1)*(nn2+1)-nummin;
      numsel:=nummin;
      numtruesel:=nummin;
-     p.Canvas.Brush.Color:=clblack;
-     label3.Caption:=inttostr(nummin);
-     paused:=false;
-     p.Canvas.Brush.Color:=clwhite;
+
+     //Draw the playfield and assign the coordinatates (aa,bb) to each of cells
+     Redraw;
+     p.Visible:=true;
+     //
+
+
+     //Center the screen
+     if sender=form1 then
+     begin
+          form1.Left:=(screen.DesktopWidth div 2)-(p.Width div 2);
+          form1.Top:=(screen.DesktopHeight div 2) -(p.Height div 2);
+     end;
+     //
+
+     //Connecting the cells
      for i2:=0 to nn1 do
          for j2:=0 to nn2 do
-             //if ar[i2,j2].ingame
-              //  then
                     begin
                          for k2:=0 to nn1 do
                              for l2:=0 to nn2 do
@@ -277,11 +316,23 @@ begin
                                     then ar[i2,j2].addenv(ar[k2,l2]);
                                  //
                     end;
-     timer1.Enabled:=true;
+
      for i2:=0 to nn1
          do ar[i2,nn2].open;
      for j2:=0 to nn2
          do ar[nn1,j2].open;
+
+     //game form update
+     label3.Caption:=inttostr(nummin);
+     paused:=false;
+     button2.Caption:='Pause';
+     label1.Caption:='0';
+     game:=0;
+     MenuItem2.Enabled:=true;
+     MenuItem3.Enabled:=true;
+     timer1.Enabled:=true;
+     //
+
 end;
 
 
@@ -295,8 +346,7 @@ end;
 
 function inttocolor(m:integer):TColor;
 begin
-     case m mod 10 of
-          0: result:=$007FFF;
+     case m mod 11 of
           1: result:=clblue;
           2: result:=clgreen;
           3: result:=clred;
@@ -306,6 +356,8 @@ begin
           7: result:=clolive;
           8: result:=clpurple;
           9: result:=clLime-$00003000+$00300000;
+          10: result:=$007FFF;
+          0: result:=$400040;
           else result:=clblack
      end;
 end;
@@ -327,15 +379,70 @@ begin
                         end;;
 end;
 
-procedure Mcell1.preshow(d:string);
+
+
+procedure Mcell1.preshow(d:char; c:Tcolor);
 begin
-     p.canvas.Polygon([Point(aa,bb+rr),Point(aa+rx,bb+ry),Point(aa+rx,bb-ry),
-     Point(aa,bb-rr),Point(aa-rx,bb-ry),
-     Point(aa-rx,bb+ry)]);
-     p.canvas.TextOut(aa-digitoffsetx,bb-digitoffsety,d);
-     p.canvas.Polyline([Point(aa,bb+rr),Point(aa+rx,bb+ry),Point(aa+rx,bb-ry),
-     Point(aa,bb-rr),Point(aa-rx,bb-ry),
-     Point(aa-rx,bb+ry),Point(aa,bb+rr)]);
+     p.Canvas.Pen.Width:=1;
+     p.Canvas.Pen.Color:=clBlack;
+     DrawHex(p.Canvas,rx,ry,rr,aa,bb);
+
+     p.Canvas.Pen.Width:=2+ry div 10;
+     p.Canvas.Pen.Color:=c;
+         case d of
+          '*':    DrawStar(p.Canvas,ry,aa-9*ry div 10,bb-10*ry div 10);
+          'X':    DrawX(p.Canvas,ry,aa-8*ry div 10,bb-10*ry div 10);
+          ' ': ;
+          '0': Draw0(p.Canvas,ry,aa-5*ry div 10,bb-8*ry div 10);
+          'A':  begin
+                   Draw1(p.Canvas,ry,aa-10*ry div 10,bb-8*ry div 10);
+                   Draw0(p.Canvas,ry,aa+0*ry div 10,bb-8*ry div 10);
+               end;
+          '1': Draw1(p.Canvas,ry,aa-4*ry div 10,bb-8*ry div 10);
+          'B':  begin
+                   Draw1(p.Canvas,ry,aa-8*ry div 10,bb-8*ry div 10);
+                   Draw1(p.Canvas,ry,aa+4*ry div 10,bb-8*ry div 10);
+               end;
+          '2': Draw2(p.Canvas,ry,aa-5*ry div 10,bb-8*ry div 10);
+          'C':  begin
+                    Draw1(p.Canvas,ry,aa-10*ry div 10,bb-8*ry div 10);
+                    Draw2(p.Canvas,ry,aa+0*ry div 10,bb-8*ry div 10);
+                end;
+          '3': Draw3(p.Canvas,ry,aa-5*ry div 10,bb-8*ry div 10);
+          'D': begin
+                    Draw1(p.Canvas,ry,aa-10*ry div 10,bb-8*ry div 10);
+                    Draw3(p.Canvas,ry,aa+0*ry div 10,bb-8*ry div 10);
+               end;
+          '4': Draw4(p.Canvas,ry,aa-5*ry div 10,bb-8*ry div 10);
+          'E': begin
+                    Draw1(p.Canvas,ry,aa-10*ry div 10,bb-8*ry div 10);
+                    Draw4(p.Canvas,ry,aa+0*ry div 10,bb-8*ry div 10);
+               end;
+          '5':  Draw5(p.Canvas,ry,aa-5*ry div 10,bb-8*ry div 10);
+          'F':  begin
+                     Draw1(p.Canvas,ry,aa-10*ry div 10,bb-8*ry div 10);
+                     Draw5(p.Canvas,ry,aa+1*ry div 10,bb-8*ry div 10);
+                end;
+           '6': Draw6(p.Canvas,ry,aa-5*ry div 10,bb-8*ry div 10);
+           'G': begin
+                    Draw1(p.Canvas,ry,aa-10*ry div 10,bb-8*ry div 10);
+                    Draw6(p.Canvas,ry,aa+0*ry div 10,bb-8*ry div 10);
+                end;
+            '7': Draw7(p.Canvas,ry,aa-5*ry div 10,bb-8*ry div 10);
+            'H': begin
+                    Draw1(p.Canvas,ry,aa-10*ry div 10,bb-8*ry div 10);
+                    Draw7(p.Canvas,ry,aa+0*ry div 10,bb-8*ry div 10);
+                 end;
+             '8': Draw8(p.Canvas,ry,aa-5*ry div 10,bb-8*ry div 10);
+             'I': begin
+                    Draw1(p.Canvas,ry,aa-10*ry div 10,bb-8*ry div 10);
+                    Draw8(p.Canvas,ry,aa+0*ry div 10,bb-8*ry div 10);
+                 end;
+             '9': Draw9(p.Canvas,ry,aa-5*ry div 10,bb-8*ry div 10);
+          else     ;
+     end;
+    // p.Canvas.Pen.Color:=clBlack;
+
 end;
 
 procedure Mcell1.show;
@@ -344,11 +451,10 @@ begin
         then
             begin
                  p.Canvas.Brush.Color:=$00C0D0D0;
-                 p.Canvas.Font.Color:=clblack;
                  if flag
                     then
                         begin
-                             preshow('X');
+                             preshow('X',clBlack);
                              numsel:=numsel-1;
                              form1.label3.caption:=inttostr(numsel);
                              if mine
@@ -357,13 +463,15 @@ begin
                                 then
                                     begin
                                          game:=1;
+                                         form1.MenuItem2.Enabled:=false;
+                                         form1.MenuItem3.Enabled:=false;
                                          form1.caption:=form1.caption+': You''ve won';
                                          form1.win;
                                     end;
                         end
                     else
                         begin
-                             preshow(' ');
+                             preshow(' ',clBlack);
                              p.Canvas.Brush.Color:=clwhite;
                              numsel:=numsel+1;
                              form1.label3.caption:=inttostr(numsel);
@@ -373,6 +481,8 @@ begin
                                 then
                                     begin
                                          game:=1;
+                                         form1.MenuItem2.Enabled:=false;
+                                         form1.MenuItem3.Enabled:=false;
                                          form1.caption:=form1.caption+': You''ve won';
                                          form1.win;
                                     end;
@@ -388,11 +498,10 @@ begin
                    begin
                         p.Canvas.Brush.Color:=clwhite;
                         if mines=0
-                           then preshow(' ')
+                           then preshow(' ',clBlack)
                            else
                                begin
-                                    p.Canvas.Font.Color:=inttocolor(mines);
-                                    preshow(dig(mines));
+                                    preshow(dig(mines),inttocolor(mines));
                                end;
                    end;
 end;
@@ -405,36 +514,33 @@ begin
                  if sw
                     then p.Canvas.Brush.Color:=$00C0D0D0
                     else p.Canvas.Brush.Color:=clgray;
-                 p.Canvas.Font.Color:=clblack;
                  if flag
                     then
                         begin
                              if not sw
                                 then p.Canvas.brush.Color:=clred;
-                                preshow('X');
+                                preshow('X',clBlack);
                         end
                     else
                         begin
                              if sw
-                                then preshow(' ')
+                                then preshow(' ',clBlack)
                                 else
                                     if momentflag
                                        then
                                            if momentnumber>=0
                                             then
                                                 begin
-                                                     p.Canvas.Font.Color:=clwhite;
-                                                     preshow(dig(momentnumber));
+                                                     preshow(dig(momentnumber),clWhite);
                                                 end
                                             else
                                                 begin
-                                                     p.Canvas.Font.Color:=clred;
-                                                     preshow(inttostr(-momentnumber));
+                                                     preshow(dig(-momentnumber),clRed);
                                                 end
                                        else
                                            begin
                                                 p.Canvas.brush.Color:=clred;
-                                                preshow(' ');
+                                                preshow(' ',clBlack);
                                            end
                         end
             end
@@ -444,11 +550,10 @@ begin
                     then p.Canvas.Brush.Color:=clwhite
                     else p.Canvas.Brush.Color:=$00A0A0FF;
                  if mines=0
-                    then preshow(' ')
+                    then preshow(' ',clBlack)
                     else
                         begin
-                             p.Canvas.Font.Color:=inttocolor(mines);
-                             preshow(dig(mines));
+                             preshow(dig(mines),inttocolor(mines));
                         end;
             end;
 end;
@@ -642,6 +747,7 @@ begin
      p.Visible:=not paused;
      if game=0
         then timer1.Enabled:=not paused;
+     //Button1.Enabled:=not paused;
      if paused
         then button2.Caption:='Play'
         else button2.Caption:='Pause'
@@ -654,9 +760,10 @@ var i,j:integer;
 begin
      timer1.Enabled:=false;
      p.Canvas.Brush.Color:=clred;
-     p.Canvas.Font.Color:=clblack;
-     er.preshow('*');
+     er.preshow('*',clBlack);
      game:=2;
+     MenuItem2.Enabled:=false;
+     MenuItem3.Enabled:=false;
      form1.caption:=form1.caption+': You''ve lost';
      p.Canvas.Brush.Color:=clwhite;
      for i:=0 to nn1 do
@@ -666,13 +773,11 @@ begin
                     if ar[i,j].flag
                        then
                            begin
-                                p.Canvas.Font.Color:=clblack;
-                                ar[i,j].preshow('*');
+                                ar[i,j].preshow('*',clBlack);
                            end
                        else
                            begin
-                                p.Canvas.Font.Color:=clred;
-                                ar[i,j].preshow('*');
+                                ar[i,j].preshow('*',clred);
                            end;
 end;
 
@@ -878,8 +983,8 @@ begin
          form2.StringGrid1.Cells[0,ix]:='';
      for ix:=0 to 10 do
          form2.StringGrid1.Cells[1,ix]:='';
-     if not paused
-        then button2.Click; //Click Pause
+    // if not paused
+    //  then button2.Click; //Do not click Pause
      assignfile(fpr,curprofilename);
      reset(fpr);
         read(fpr,rec);

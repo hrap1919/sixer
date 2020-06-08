@@ -32,7 +32,7 @@
         <PackageName Value="LCL"/>
       </Item1>
     </RequiredPackages>
-    <Units Count="4">
+    <Units Count="5">
       <Unit0>
         <Filename Value="Project1.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -55,6 +55,11 @@
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
       </Unit3>
+      <Unit4>
+        <Filename Value="drawing.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="Drawing"/>
+      </Unit4>
     </Units>
   </ProjectOptions>
   <CompilerOptions>
