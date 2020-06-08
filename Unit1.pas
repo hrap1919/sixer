@@ -9,16 +9,16 @@ uses
   Dialogs,MINES, ExtCtrls, StdCtrls, Menus;
 
 const
-
-
-     //ry=ry div 10;
-
-     // Set touch=1 to inverst left and right mouse clicks
-     touch=0;
-     // Set separator='/' for Linux
-     separator='\';
-     FormDy=30; // addition for correct window height, Linux =28  ?
+     FormDy=30; // addition for correct window height
      FieldTop=30; //play field Y-cooryinate
+
+     // Set separator='/' for Linux
+     {$IFDEF UNIX}
+      separator='/';
+     {$ELSE  Windows}
+      separator='\';
+     {$ENDIF}
+
 
 type
 
@@ -50,6 +50,8 @@ type
     MenuItem1: TMenuItem;
     MenuItem2: TMenuItem;
     MenuItem3: TMenuItem;
+    MenuItem4: TMenuItem;
+    MenuItem5: TMenuItem;
     Timer1: TTimer;
     MainMenu1: TMainMenu;
     N1: TMenuItem;
@@ -59,6 +61,8 @@ type
     OpenDialog1: TOpenDialog;
     TOP111: TMenuItem;
     Label4: TLabel;
+    procedure FormResize(Sender: TObject);
+    procedure FormWindowStateChange(Sender: TObject);
     procedure Image1MouseDown(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Integer);
     procedure Image1MouseUp(Sender: TObject; Button: TMouseButton;
@@ -70,6 +74,7 @@ type
     procedure FormShow(Sender: TObject);
     procedure MenuItem2Click(Sender: TObject);
     procedure MenuItem3Click(Sender: TObject);
+    procedure MenuItem5Click(Sender: TObject);
     procedure Timer1Timer(Sender: TObject);
     procedure Button2Click(Sender: TObject);
     procedure win;
@@ -112,13 +117,19 @@ newprofileresult:integer; // result of selecting profile
 curprofilename:string;  // current profile
 
 
-// Size parameters of cells
 
+
+// Size parameters of cells
 ry:integer=10;
 rx:integer=18;
 rr:integer=20;
 //rr=2*ry;
 //rx=9*ry div 5;
+
+
+//Invert or revert buttons
+touch:boolean=false;
+//
 
 
 nn1:integer=17;   //columns
@@ -220,6 +231,8 @@ begin
   if ry>=8 then ry:=ry-2;
   Redraw
 end;
+
+
 
 //
 
@@ -621,6 +634,21 @@ begin
         end;
 end;
 
+procedure TForm1.FormResize(Sender: TObject);
+begin
+  if p<>nil then
+      begin
+        form1.Width:=p.Left+p.Width;
+         form1.Height:=FormDy+p.Top+p.Height;
+      end;
+end;
+
+procedure TForm1.FormWindowStateChange(Sender: TObject);
+begin
+    If Form1.WindowState=wsMaximized then
+      Form1.WindowState:=wsNormal
+end;
+
 procedure TForm1.Image1MouseUp(Sender: TObject; Button: TMouseButton;
   Shift: TShiftState; X, Y: Integer);
 var i,j:integer; xx:Morbit;
@@ -639,14 +667,14 @@ if game=0 then
                                   xx:=xx.next;
                              end;
                        if (ar[i,j].state=true) then ar[i,j].klik;
-                       if ((touch = 0) and (mbleft = button) or (touch = 1) and (mbright = button))
+                       if ((not touch ) and (mbleft = button) or (touch) and (mbright = button))
                                            and  (shift=[])
                                            and (ar[i,j].state=false)
                                            and (ar[i,j].flag=false)
                                   then
                                       if  ar[i,j].open
                                           then ar[i,j].klik;
-                       if ((touch = 0) and (mbright = button) or (touch = 1) and (mbleft = button))
+                       if ((not touch) and (mbright = button) or (touch ) and (mbleft = button))
                                            and (shift=[])
                                            and (ar[i,j].state=false)
                                   then
@@ -1034,5 +1062,13 @@ begin
 end;
 //
 
+//Invert and revert buttons menu
+procedure TForm1.MenuItem5Click(Sender: TObject);
+begin
+   touch:=not touch;
+   if touch
+      then form1.MenuItem5.Caption:='Revert buttons'
+      else form1.MenuItem5.Caption:='Invert buttons';
+ end;
 
 end.

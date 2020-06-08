@@ -3,8 +3,6 @@ object Form1: TForm1
   Height = 276
   Top = 293
   Width = 450
-  BorderIcons = [biSystemMenu, biMinimize]
-  BorderStyle = bsSingle
   Caption = 'Form1'
   ClientHeight = 256
   ClientWidth = 450
@@ -15,7 +13,9 @@ object Form1: TForm1
   Menu = MainMenu1
   OnClose = FormClose
   OnCreate = FormCreate
+  OnResize = FormResize
   OnShow = FormShow
+  OnWindowStateChange = FormWindowStateChange
   Position = poMainFormCenter
   LCLVersion = '2.0.8.0'
   object Label1: TLabel
@@ -118,6 +118,13 @@ object Form1: TForm1
       object TOP111: TMenuItem
         Caption = 'TOP 11'
         OnClick = TOP111Click
+      end
+      object MenuItem4: TMenuItem
+        Caption = 'Mouse'
+        object MenuItem5: TMenuItem
+          Caption = 'Invert Buttons'
+          OnClick = MenuItem5Click
+        end
       end
       object MenuItem2: TMenuItem
         Caption = 'Zoom In'
