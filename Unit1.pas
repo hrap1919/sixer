@@ -56,7 +56,6 @@ type
     MainMenu1: TMainMenu;
     N1: TMenuItem;
     NewProfile1: TMenuItem;
-    safeprofile1: TMenuItem;
     LoadProfile1: TMenuItem;
     OpenDialog1: TOpenDialog;
     TOP111: TMenuItem;
@@ -812,7 +811,7 @@ end;
 
 procedure Tform1.win;
 var  rec1:Tpr;
-champ:boolean;ix,jx,kx:integer;
+champ,istemp:boolean;ix,jx,kx:integer;
 ar:array [0..10] of TPr;
 begin
      timer1.Enabled:=false;
@@ -866,14 +865,26 @@ begin
              l4.Parent:=f;
              e1.Parent:=f;
              b1.Parent:=f;
-             f.Caption:='GONGRATULATION!';
-             l1.Caption:='You are in TOP 11';
+             f.Caption:='Success!';
              l2.Top:=15;
-             l2.Caption:='Profile: '''+rec1.Name+'''';
              l3.Top:=30;
-             l3.Caption:='Position: '+ inttostr(kx+1);
              l4.Top:=45;
-             l4.Caption:='Please enter your name';
+             istemp:=CompareStr(rec1.Name,'Temp')=0;
+             if istemp
+                then
+                  begin
+                     l1.Caption:='Now you can save your profile.';
+                     l2.Caption:='Then you can rename temp.tmp';
+                     l3.Caption:='to a *.six file accordingly.';
+                     l4.Caption:='Please enter the profile name';
+                  end
+                else
+                  begin
+                     l1.Caption:='You are in TOP 11';
+                     l2.Caption:='Profile: '''+rec1.Name+'''';
+                     l3.Caption:='Position: '+ inttostr(kx+1);
+                     l4.Caption:='Please enter your name';
+                  end;
              e1.Top:=65;
              b1.Top:=65;
              e1.Width:=120;
@@ -883,6 +894,8 @@ begin
              f.Left:=form1.Left;
              b1.OnClick:=newprofileok;
              f.ShowModal;
+             if istemp
+                then rec1.Name:=e1.Text;
              if ix<11
                 then ix:=ix+1;
              for jx:=ix-1 downto kx+1 do
@@ -891,11 +904,11 @@ begin
              ar[kx].Time:=strtoint(label1.Caption);
              rewrite(fpr);
                           write(fpr,rec1);
-                          for jx:=0 to ix-1 do
+                          if istemp then else for jx:=0 to ix-1 do
                              write(fpr,ar[jx]);
              closefile(fpr);
              f.Free;
-             top111click(form1);
+             if istemp then else top111click(form1);
         end;
 end;
 //
