@@ -421,7 +421,7 @@ begin
           8: result:=clpurple;
           9: result:=clLime-$00003000+$00300000;
           10: result:=$007FFF;
-          0: result:=$400040;
+          0: result:=$A000F0;
           else result:=clblack
      end;
 end;
