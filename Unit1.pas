@@ -9,13 +9,18 @@ uses
   Dialogs,MINES, ExtCtrls, StdCtrls, Menus;
 
 const
-     FormDy=30; // addition for correct window height
-     FieldTop=30; //play field Y-cooryinate
+     FormDy=50; // addition for correct window height
+     FormDx=20; // addition for correct window width
+     FieldTop=30; //play field Y-coordinate
+
+     //The default position of the form in percentages from the screen
+     px=10;
+     py=10;
 
      // Set separator='/' for Linux
      {$IFDEF UNIX}
       separator='/';
-     {$ELSE  Windows}
+     {$ELSE}
       separator='\';
      {$ENDIF}
 
@@ -58,6 +63,7 @@ type
     NewProfile1: TMenuItem;
     LoadProfile1: TMenuItem;
     OpenDialog1: TOpenDialog;
+    Timer2: TTimer;
     TOP111: TMenuItem;
     Label4: TLabel;
     procedure FormResize(Sender: TObject);
@@ -71,11 +77,13 @@ type
       Y: Integer);
     procedure Button1Click(Sender: TObject);
     procedure FormShow(Sender: TObject);
+    procedure Label4Click(Sender: TObject);
     procedure MenuItem2Click(Sender: TObject);
     procedure MenuItem3Click(Sender: TObject);
     procedure MenuItem5Click(Sender: TObject);
     procedure Timer1Timer(Sender: TObject);
     procedure Button2Click(Sender: TObject);
+    procedure Timer2Timer(Sender: TObject);
     procedure win;
     procedure lose(er:Mcell1);
     procedure NewProfile1Click(Sender: TObject);
@@ -182,6 +190,11 @@ begin
         form1.Button1Click(form1);
 end;
 
+procedure TForm1.Label4Click(Sender: TObject);
+begin
+
+end;
+
 
 //Redraw the Timage p with cells
 
@@ -196,8 +209,20 @@ begin
      p.Top:=FieldTop;p.Left:=1;
      p.Height:=(nn2+1)*3*ry+ry;
      p.Width:=(nn1+1)*2*rx+rx;
-     form1.Width:=p.Left+p.Width;
-     form1.Height:=FormDy+p.Top+p.Height;
+
+      //Updating the form size
+     i2:=FormDx+p.Left+p.Width;
+     if i2>(100-px)*screen.DesktopWidth div 100
+        then i2:=(100-px)*screen.DesktopWidth div 100;
+     form1.Width:=i2;
+     i2:=FormDy+p.Top+p.Height;
+     if i2>(100-py)*screen.DesktopHeight div 100
+        then i2:=(100-py)*screen.DesktopHeight div 100;
+     form1.Height:=i2;
+     //
+     
+
+
      p.Visible:=not paused;
      p.Parent:=form1;
      p.OnMouseDown:=form1.Image1MouseDown;
@@ -306,12 +331,11 @@ begin
      p.Visible:=true;
      //
 
-
      //Center the screen
      if sender=form1 then
      begin
-          form1.Left:=(screen.DesktopWidth div 2)-(p.Width div 2);
-          form1.Top:=(screen.DesktopHeight div 2) -(p.Height div 2);
+          form1.Left:=px*screen.DesktopWidth div 100;
+          form1.Top:=py*screen.DesktopHeight div 100;
      end;
      //
 
@@ -633,20 +657,6 @@ begin
         end;
 end;
 
-procedure TForm1.FormResize(Sender: TObject);
-begin
-  if p<>nil then
-      begin
-        form1.Width:=p.Left+p.Width;
-         form1.Height:=FormDy+p.Top+p.Height;
-      end;
-end;
-
-procedure TForm1.FormWindowStateChange(Sender: TObject);
-begin
-    If Form1.WindowState=wsMaximized then
-      Form1.WindowState:=wsNormal
-end;
 
 procedure TForm1.Image1MouseUp(Sender: TObject; Button: TMouseButton;
   Shift: TShiftState; X, Y: Integer);
@@ -779,6 +789,9 @@ begin
         then button2.Caption:='Play'
         else button2.Caption:='Pause'
 end;
+
+
+
 //
 
 //Endings
@@ -1083,5 +1096,49 @@ begin
       then form1.MenuItem5.Caption:='Revert buttons'
       else form1.MenuItem5.Caption:='Invert buttons';
  end;
+
+//Resize behaviour
+procedure TForm1.FormResize(Sender: TObject);
+begin
+ Timer2.Enabled:=false;
+ Timer2.Enabled:=true;
+end;
+
+procedure TForm1.FormWindowStateChange(Sender: TObject);
+begin
+    Timer2.Enabled:=false;
+    Timer2.Enabled:=true;
+end;
+
+procedure TForm1.Timer2Timer(Sender: TObject);
+var
+   tempx:integer=0;
+   tempy:integer=0;
+begin
+  if p<>nil then
+      begin
+       if Form1.WindowState=wsMaximized then
+           begin
+            Form1.WindowState:=wsNormal;
+             tempx:=FormDx+p.Left+p.Width;
+             tempy:=FormDy+p.Top+p.Height;
+           end;
+       if form1.Width>FormDx+p.Left+p.Width
+           then tempx:=FormDx+p.Left+p.Width;
+       if form1.Height>FormDy+p.Top+p.Height
+            then tempy:=FormDy+p.Top+p.Height;
+      end;
+  if tempx>screen.DesktopWidth
+     then tempx:=screen.DesktopWidth;
+  if tempy>screen.DesktopHeight
+     then tempy:=screen.DesktopHeight;
+  if tempx>0
+     then  form1.Width:=tempx;
+  if tempy>0
+     then  form1.Height:=tempy;
+  Timer2.Enabled:=false;
+end;
+//
+
 
 end.
