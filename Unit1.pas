@@ -115,13 +115,15 @@ uses Unit2,Drawing;
 var
 
 fpr: file of TPR;
+filexist:integer=1;
+
 rec:Tpr;
 momentnumber:integer;  //temp number for mouse
 momentflag:boolean ;  //temp flag for mouse
 
 CurrentDirectory: array[0..MAX_PATH] of Char;   //path of exe-file
 newprofileresult:integer; // result of selecting profile
-curprofilename:string;  // current profile
+curprofilename:string='';  // current profile
 
 
 
@@ -173,16 +175,32 @@ begin
             begin
                  assignfile(Tx,currentdirectory+separator+'Profiles'+separator+'last');
                  reset(Tx);
-                           readln(Tx,curprofilename);
+                 readln(Tx,curprofilename);
                  closefile(Tx);
                  if not FileExists(curprofilename)
-                    then curprofilename:=currentdirectory+separator+'Profiles'+separator+'Beginner.six';
+                    then filexist:=2;//curprofilename:=currentdirectory+separator+'Profiles'+separator+'Beginner.six';
             end
-        else curprofilename:=currentdirectory+separator+'Profiles'+separator+'Beginner.six';
-        assignfile(fpr,curprofilename);
-        reset(fpr);
-                   read(fpr,rec)  ;
-        closefile(fpr);
+        else filexist:=2;
+        if filexist=2
+            then if FileExists(currentdirectory+separator+'Profiles'+separator+'Beginner.six')
+                    then curprofilename:=currentdirectory+separator+'Profiles'+separator+'Beginner.six'
+                    else filexist:=0;
+        if filexist>0
+           then
+               begin
+                assignfile(fpr,curprofilename);
+                reset(fpr);
+                read(fpr,rec)  ;
+                closefile(fpr);
+               end
+           else
+               begin
+                  rec.width:=11;
+                  rec.height:=11;
+                  rec.mines:=20;
+                  rec.name:='Temp';
+                  TOP111.Enabled:=false;
+               end;
         nn1:=rec.width;
         nn2:=rec.height;
         destnm:=rec.mines;
@@ -273,7 +291,23 @@ end;
 procedure TForm1.Button1Click(Sender: TObject);
 var i2,j2,k2,l2:integer;
 begin
-     if p<>nil
+  if filexist>0
+           then
+               begin
+                assignfile(fpr,curprofilename);
+                reset(fpr);
+                read(fpr,rec)  ;
+                closefile(fpr);
+               end
+           else
+               begin
+                  rec.width:=12;
+                  rec.height:=12;
+                  rec.mines:=20;
+                  rec.name:='Temp';
+               end;
+   form1.Caption:=rec.Name;
+  if p<>nil
         then ClearField;
         rr:=2*ry;
         rx:=9*ry div 5;
@@ -281,13 +315,7 @@ begin
      setlength(ar,nn1+1,nn2+1);
      setlength(mm,nn1+1,nn2+1);
 
-     assignfile(fpr,curprofilename);
-     reset(fpr);
-                read(fpr,rec);
-                form1.Caption:=rec.Name;
-     closefile(fpr);
-
-     //stupid randomization of bombs
+          //stupid randomization of bombs
      randomize;
      nummin:=0;
      for i2:=0 to nn1 do
@@ -827,9 +855,12 @@ var  rec1:Tpr;
 champ,istemp:boolean;ix,jx,kx:integer;
 ar:array [0..10] of TPr;
 begin
-     timer1.Enabled:=false;
-     assignfile(fpr,curprofilename);
-     reset(fpr);
+  timer1.Enabled:=false;
+  if filexist>0
+    then
+        begin
+             assignfile(fpr,curprofilename);
+             reset(fpr);
                 read(fpr,rec1);
                 ix:=0;
                 while not eof(fpr) and (ix<=10) do
@@ -838,11 +869,11 @@ begin
                            ar[ix]:=rec;
                            ix:=ix+1;
                       end;
-     closefile(fpr);
-     champ:=false;
-     jx:=0;
-     while (jx<ix) and not champ do
-           begin
+             closefile(fpr);
+             champ:=false;
+             jx:=0;
+             while (jx<ix) and not champ do
+             begin
                 if strtoint(label1.Caption)<ar[jx].time
                    then
                        begin
@@ -850,78 +881,82 @@ begin
                             champ:=true
                        end;
                 jx:=jx+1;
-           end;
-     if not champ and (ix<11)
-        then
-            begin
-                 kx:=ix;
-                 champ:=true;
-            end ;
-     if champ then
-        begin
-             f:=Tform.Create(form1);
-             f.Icon:=form1.Icon;
-             f.BorderStyle:=bsSingle;
-             f.AutoSize:=true;
-             e1:=Tedit.Create(f);
-             b1:=Tbutton.Create(f);
-             l1:=Tlabel.Create(f);
-             l2:=Tlabel.Create(f);
-             l3:=Tlabel.Create(f);
-             l4:=Tlabel.Create(f);
-             b1.Caption:='Ok';
-             b1.Default:=true;
-             b1.Cancel:=true;
-             l1.Parent:=f;
-             l2.Parent:=f;
-             l3.Parent:=f;
-             l4.Parent:=f;
-             e1.Parent:=f;
-             b1.Parent:=f;
-             f.Caption:='Success!';
-             l2.Top:=15;
-             l3.Top:=30;
-             l4.Top:=45;
-             istemp:=CompareStr(rec1.Name,'Temp')=0;
-             if istemp
+             end;
+             if not champ and (ix<11)
+               then
+                begin
+                  kx:=ix;
+                  champ:=true;
+                end ;
+             if champ
                 then
-                  begin
-                     l1.Caption:='Now you can save your profile.';
-                     l2.Caption:='Then you can rename temp.tmp';
-                     l3.Caption:='to a *.six file accordingly.';
-                     l4.Caption:='Please enter the profile name';
-                  end
-                else
-                  begin
-                     l1.Caption:='You are in TOP 11';
-                     l2.Caption:='Profile: '''+rec1.Name+'''';
-                     l3.Caption:='Position: '+ inttostr(kx+1);
-                     l4.Caption:='Please enter your name';
-                  end;
-             e1.Top:=65;
-             b1.Top:=65;
-             e1.Width:=120;
-             b1.Left:=125;
-             f.Top:=form1.Top+80;
-             f.Height:=125;f.Width:=215;
-             f.Left:=form1.Left;
-             b1.OnClick:=newprofileok;
-             f.ShowModal;
-             if istemp
-                then rec1.Name:=e1.Text;
-             if ix<11
-                then ix:=ix+1;
-             for jx:=ix-1 downto kx+1 do
-                 ar[jx]:=ar[jx-1];
-             ar[kx].Name:=e1.Text;
-             ar[kx].Time:=strtoint(label1.Caption);
-             rewrite(fpr);
-                          write(fpr,rec1);
-                          if istemp then else for jx:=0 to ix-1 do
-                             write(fpr,ar[jx]);
-             closefile(fpr);
-             f.Free;
-             if istemp then else top111click(form1);
+                    begin
+                         f:=Tform.Create(form1);
+                         f.Icon:=form1.Icon;
+                         f.BorderStyle:=bsSingle;
+                         f.AutoSize:=true;
+                         e1:=Tedit.Create(f);
+                         b1:=Tbutton.Create(f);
+                         l1:=Tlabel.Create(f);
+                         l2:=Tlabel.Create(f);
+                         l3:=Tlabel.Create(f);
+                         l4:=Tlabel.Create(f);
+                         b1.Caption:='Ok';
+                         b1.Default:=true;
+                         b1.Cancel:=true;
+                         l1.Parent:=f;
+                         l2.Parent:=f;
+                         l3.Parent:=f;
+                         l4.Parent:=f;
+                         e1.Parent:=f;
+                         b1.Parent:=f;
+                         f.Caption:='Success!';
+                         l2.Top:=15;
+                         l3.Top:=30;
+                         l4.Top:=45;
+                         istemp:=CompareStr(rec1.Name,'Temp')=0;
+                         if istemp
+                            then
+                                begin
+                                     l1.Caption:='Now you can save your profile.';
+                                     l2.Caption:='Then you can rename temp.tmp';
+                                     l3.Caption:='to a *.six file accordingly.';
+                                     l4.Caption:='Please enter the profile name';
+                                end
+                            else
+                                begin
+                                     l1.Caption:='You are in TOP 11';
+                                     l2.Caption:='Profile: '''+rec1.Name+'''';
+                                     l3.Caption:='Position: '+ inttostr(kx+1);
+                                     l4.Caption:='Please enter your name';
+                                end;
+                         e1.Top:=65;
+                         b1.Top:=65;
+                         e1.Width:=150;
+                         b1.Left:=155;
+                         f.Top:=form1.Top+80;
+                         f.Height:=125;f.Width:=215;
+                         f.Left:=form1.Left;
+                         b1.OnClick:=newprofileok;
+                         f.ShowModal;
+                         if istemp
+                            then rec1.Name:=e1.Text;
+                         if ix<11
+                            then ix:=ix+1;
+                         for jx:=ix-1 downto kx+1 do
+                             ar[jx]:=ar[jx-1];
+                         ar[kx].Name:=e1.Text;
+                         ar[kx].Time:=strtoint(label1.Caption);
+                         rewrite(fpr);
+                            write(fpr,rec1);
+                            if istemp
+                                then else for jx:=0 to ix-1 do
+                                   write(fpr,ar[jx]);
+                            closefile(fpr);
+                         f.Free;
+                         if istemp
+                            then else top111click(form1);
+                    end;
         end;
 end;
 //
@@ -948,7 +983,7 @@ begin
      l1.Height:=19; l2.Height:=19; l3.Height:=19;
      l1.top:=39; l2.top:=59; l3.top:=79;
      l1.Parent:=f; l2.Parent:=f; l3.Parent:=f;
-     e1.left:=100; e2.left:=100; e3.left:=100;
+     e1.left:=110; e2.left:=110; e3.left:=110;
      e1.Height:=19; e2.Height:=19; e3.Height:=19;
      e1.top:=39; e2.top:=59; e3.top:=79;
      e1.Width:=30; e2.Width:=30; e3.Width:=30;
@@ -960,7 +995,7 @@ begin
      b1.Default:=true;
      b2.Caption:='Cancel';
      b2.Cancel:=true;
-     b1.Left:=131; b2.left:=131;
+     b1.Left:=161; b2.left:=161;
      b1.Top:=39; b2.Top:=74;
      b1.Height:=25; b2.Height:=25;
      b1.Width:=70; b2.width:=70;
@@ -975,9 +1010,6 @@ begin
      if newprofileresult=1
       then
        begin
-        curprofilename:=currentdirectory+separator+'Profiles'+separator+'temp.tmp';
-        assignfile(fpr,curprofilename);
-        rewrite(fpr);
          try
            nn1:=strtoint(e1.text)-1;
            nn2:=strtoint(e2.text)-1;
@@ -996,10 +1028,17 @@ begin
          rec.height:=nn2;
          rec.mines:=destnm;
          rec.Name:='Temp';
-         write(fpr,rec);
-        closefile(fpr);
-        f.Free;
-        form1.Button1Click(form1)
+         if filexist>0
+            then
+                begin
+                     curprofilename:=currentdirectory+separator+'Profiles'+separator+'temp.tmp';
+                     assignfile(fpr,curprofilename);
+                     rewrite(fpr);
+                     write(fpr,rec);
+                     closefile(fpr);
+                end;
+          f.Free;
+            form1.Button1Click(form1)
        end
       else f.Free;
 end;
@@ -1033,26 +1072,28 @@ end;
 procedure TForm1.TOP111Click(Sender: TObject);
 var ix:byte;
 begin
-     for ix:=0 to 10 do
-         form2.StringGrid1.Cells[0,ix]:='';
-     for ix:=0 to 10 do
-         form2.StringGrid1.Cells[1,ix]:='';
-    // if not paused
-    //  then button2.Click; //Do not click Pause
-     assignfile(fpr,curprofilename);
-     reset(fpr);
-        read(fpr,rec);
-        form2.Caption:='TOP 11: '+rec.Name;
-        for ix:=0 to 10 do
-            if not eof(fpr)
-               then
-                   begin
-                        read(fpr,rec);
-                        form2.StringGrid1.Cells[0,ix]:=rec.Name;
-                        form2.StringGrid1.Cells[1,ix]:=inttostr(rec.time);
-                   end;
-     closefile(fpr);
-     form2.showmodal;
+  if filexist>0
+    then
+      begin
+           for ix:=0 to 10 do
+               form2.StringGrid1.Cells[0,ix]:='';
+           for ix:=0 to 10 do
+               form2.StringGrid1.Cells[1,ix]:='';
+           assignfile(fpr,curprofilename);
+           reset(fpr);
+             read(fpr,rec);
+             form2.Caption:='TOP 11: '+rec.Name;
+             for ix:=0 to 10 do
+                 if not eof(fpr)
+                    then
+                        begin
+                             read(fpr,rec);
+                             form2.StringGrid1.Cells[0,ix]:=rec.Name;
+                             form2.StringGrid1.Cells[1,ix]:=inttostr(rec.time);
+                        end;
+           closefile(fpr);
+           form2.showmodal;
+      end;
 end;
 //
 
@@ -1062,10 +1103,14 @@ var Tx:Textfile;
 begin
      if p<>nil
         then ClearField;
-     assignfile(Tx,currentdirectory+separator+'Profiles'+separator+'last');
-     rewrite(Tx);
-                 writeln(Tx,curprofilename);
-     closefile(Tx);
+     if filexist>0
+        then
+            begin
+             assignfile(Tx,currentdirectory+separator+'Profiles'+separator+'last');
+             rewrite(Tx);
+             writeln(Tx,curprofilename);
+             closefile(Tx);
+            end;
 end;
 
 procedure TForm1.N2Click(Sender: TObject);
