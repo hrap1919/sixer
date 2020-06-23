@@ -1,113 +1,43 @@
 object Form1: TForm1
-  Left = 354
-  Height = 276
-  Top = 249
-  Width = 450
-  HorzScrollBar.Page = 257
-  VertScrollBar.Page = 25
+  Left = 651
+  Height = 420
+  Top = 282
+  Width = 470
+  HorzScrollBar.Page = 1
+  VertScrollBar.Page = 1
   AutoScroll = True
   Caption = 'Form1'
-  ClientHeight = 256
-  ClientWidth = 450
   Color = clBtnFace
+  DesignTimePPI = 120
   Font.Color = clWindowText
-  Font.Height = -11
+  Font.Height = -14
   Font.Name = 'MS Sans Serif'
   Menu = MainMenu1
   OnClose = FormClose
   OnCreate = FormCreate
-  OnResize = FormResize
+  OnMouseWheel = FormMouseWheel
   OnShow = FormShow
   OnWindowStateChange = FormWindowStateChange
-  Position = poMainFormCenter
+  Position = poDefault
   LCLVersion = '2.0.8.0'
-  object Label1: TLabel
-    Left = 184
-    Height = 13
-    Top = 8
-    Width = 25
-    AutoSize = False
-    Caption = '0'
-    Font.Color = clWindowText
-    Font.Height = -11
-    Font.Name = 'MS Sans Serif'
-    ParentColor = False
-    ParentFont = False
-  end
-  object Label2: TLabel
-    Left = 8
-    Height = 13
-    Top = 8
-    Width = 32
-    AutoSize = False
-    Caption = 'Mines:'
-    Font.Color = clWindowText
-    Font.Height = -11
-    Font.Name = 'MS Sans Serif'
-    ParentColor = False
-    ParentFont = False
-  end
-  object Label3: TLabel
-    Left = 48
-    Height = 13
-    Top = 8
-    Width = 25
-    AutoSize = False
-    Caption = 'Label3'
-    Font.Color = clWindowText
-    Font.Height = -11
-    Font.Name = 'MS Sans Serif'
-    ParentColor = False
-    ParentFont = False
-  end
-  object Label4: TLabel
-    Left = 144
-    Height = 13
-    Top = 8
-    Width = 26
-    Caption = 'Time:'
-    Font.Color = clWindowText
-    Font.Height = -11
-    Font.Name = 'MS Sans Serif'
-    ParentColor = False
-    ParentFont = False
-    OnClick = Label4Click
-  end
-  object Button1: TButton
-    Left = 80
-    Height = 25
-    Top = 0
-    Width = 49
-    Caption = 'New'
-    Font.Color = clWindowText
-    Font.Height = -11
-    Font.Name = 'MS Sans Serif'
-    OnClick = Button1Click
-    ParentFont = False
-    TabOrder = 0
-  end
-  object Button2: TButton
-    Left = 208
-    Height = 25
-    Top = 0
-    Width = 49
-    Caption = 'Pause'
-    Font.Color = clWindowText
-    Font.Height = -11
-    Font.Name = 'MS Sans Serif'
-    OnClick = Button2Click
-    ParentFont = False
-    TabOrder = 1
-  end
   object Timer1: TTimer
     OnTimer = Timer1Timer
-    left = 128
-    top = 32
+    left = 160
+    top = 40
   end
   object MainMenu1: TMainMenu
-    left = 8
-    top = 32
-    object N1: TMenuItem
+    ParentBidiMode = False
+    left = 10
+    top = 40
+    object MenuZoomIn: TMenuItem
+      Caption = 'Zoom In'
+      OnClick = MenuZoomInClick
+    end
+    object MenuZoomOut: TMenuItem
+      Caption = 'Zoom Out'
+      OnClick = MenuZoomOutClick
+    end
+    object Options: TMenuItem
       Caption = 'Options'
       object NewProfile1: TMenuItem
         Caption = 'New Profile'
@@ -123,35 +53,46 @@ object Form1: TForm1
       end
       object MenuItem4: TMenuItem
         Caption = 'Mouse'
-        object MenuItem5: TMenuItem
-          Caption = 'Invert Buttons'
-          OnClick = MenuItem5Click
+        object MenuOpenButton: TMenuItem
+          Caption = 'Open the cell by right button'
+          OnClick = MenuOpenButtonClick
         end
-      end
-      object MenuItem2: TMenuItem
-        Caption = 'Zoom In'
-        OnClick = MenuItem2Click
-      end
-      object MenuItem3: TMenuItem
-        Caption = 'Zoom Out'
-        OnClick = MenuItem3Click
+        object MenuDrag: TMenuItem
+          Caption = 'Disable dragging'
+          OnClick = MenuDragClick
+        end
+        object MenuDragButton: TMenuItem
+          Caption = 'Drag the field by right button'
+          OnClick = MenuDragButtonClick
+        end
       end
       object MenuItem1: TMenuItem
         Caption = 'Exit'
         OnClick = N2Click
       end
     end
+    object MenuItem10: TMenuItem
+      Caption = '   '
+    end
+    object MenuNew: TMenuItem
+      Caption = 'New'
+      OnClick = Button1Click
+    end
+    object MenuStat: TMenuItem
+      Caption = 'Mines: 0  Time:0'
+      OnClick = Button2Click
+    end
   end
   object OpenDialog1: TOpenDialog
     Title = 'Open Profile'
     Filter = 'Sixer Profiles|*.six'
-    left = 64
-    top = 32
+    left = 80
+    top = 40
   end
   object Timer2: TTimer
     Interval = 300
     OnTimer = Timer2Timer
-    left = 168
-    top = 32
+    left = 210
+    top = 40
   end
 end

@@ -6,16 +6,13 @@ interface
 
 uses
   LCLIntf, LCLType, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs,MINES, ExtCtrls, StdCtrls, Menus;
+  Dialogs,MINES, ExtCtrls, StdCtrls, Menus, Types;
 
 const
      FormDy=50; // addition for correct window height
      FormDx=20; // addition for correct window width
-     FieldTop=30; //play field Y-coordinate
+     FieldTop=0; //play field Y-coordinate
 
-     //The default position of the form in percentages from the screen
-     px=10;
-     py=10;
 
      // Set separator='/' for Linux
      {$IFDEF UNIX}
@@ -47,26 +44,26 @@ type
   { TForm1 }
 
   TForm1 = class(TForm)
-    Button1: TButton;
-    Label1: TLabel;
-    Label2: TLabel;
-    Label3: TLabel;
-    Button2: TButton;
     MenuItem1: TMenuItem;
-    MenuItem2: TMenuItem;
-    MenuItem3: TMenuItem;
+    MenuItem10: TMenuItem;
+    MenuZoomIn: TMenuItem;
+    MenuDrag: TMenuItem;
     MenuItem4: TMenuItem;
-    MenuItem5: TMenuItem;
+    MenuOpenButton: TMenuItem;
+    MenuStat: TMenuItem;
+    MenuDragButton: TMenuItem;
+    MenuZoomOut: TMenuItem;
+    MenuNew: TMenuItem;
     Timer1: TTimer;
     MainMenu1: TMainMenu;
-    N1: TMenuItem;
+    Options: TMenuItem;
     NewProfile1: TMenuItem;
     LoadProfile1: TMenuItem;
     OpenDialog1: TOpenDialog;
     Timer2: TTimer;
     TOP111: TMenuItem;
-    Label4: TLabel;
-    procedure FormResize(Sender: TObject);
+    procedure FormMouseWheel(Sender: TObject; Shift: TShiftState;
+      WheelDelta: Integer; MousePos: TPoint; var Handled: Boolean);
     procedure FormWindowStateChange(Sender: TObject);
     procedure Image1MouseDown(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Integer);
@@ -77,10 +74,11 @@ type
       Y: Integer);
     procedure Button1Click(Sender: TObject);
     procedure FormShow(Sender: TObject);
-    procedure Label4Click(Sender: TObject);
-    procedure MenuItem2Click(Sender: TObject);
-    procedure MenuItem3Click(Sender: TObject);
-    procedure MenuItem5Click(Sender: TObject);
+    procedure MenuItem11Click(Sender: TObject);
+    procedure MenuZoomInClick(Sender: TObject);
+    procedure MenuZoomOutClick(Sender: TObject);
+    procedure MenuOpenButtonClick(Sender: TObject);
+    procedure MenuDragButtonClick(Sender: TObject);
     procedure Timer1Timer(Sender: TObject);
     procedure Button2Click(Sender: TObject);
     procedure Timer2Timer(Sender: TObject);
@@ -94,6 +92,7 @@ type
     procedure N2Click(Sender: TObject);
     procedure TOP111Click(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
+    procedure MenuDragClick(Sender: TObject);
     private
     { Private declarations }
   public
@@ -115,7 +114,10 @@ uses Unit2,Drawing;
 var
 
 fpr: file of TPR;
-filexist:integer=1;
+
+// 1 - normally intsalled, 2 - first start, 0 - config is not available
+filexists:integer=1;
+//
 
 rec:Tpr;
 momentnumber:integer;  //temp number for mouse
@@ -135,12 +137,26 @@ rr:integer=20;
 //rr=2*ry;
 //rx=9*ry div 5;
 
-
 //Invert or revert buttons
-touch:boolean=false;
+touch:boolean=false; // open button
+touch1:boolean=false; //drug button
+//
+//Drag mode
+drag:boolean=true;
+
+//Scroll temp coordinated
+pausedx,pausedy:integer;
+scrollx:integer=0;
+scrolly:integer=0;
+toscrollposx:integer=0;
+toscrollposy:integer=0;
+toscroll:boolean=false;
+prescroll:boolean=false;
+afterscroll:boolean=false;
+afterzoomscroll:boolean=false;
 //
 
-
+Time:integer=0;
 nn1:integer=17;   //columns
 nn2:integer=16;   //rows
 oldnn1,oldnn2:integer; //previous columns and rows
@@ -167,25 +183,43 @@ opendialog1.InitialDir:=CurrentDirectory+separator+'Profiles';
 end;
 
 procedure TForm1.FormShow(Sender: TObject);
-var Tx:textfile;
+var Tx:textfile; s:string;
 begin
      p:=nil;
-     if FileExists(currentdirectory+separator+'Profiles'+separator+'last')
+     if FileExists(currentdirectory+separator+'Profiles'+separator+'.config')
         then
             begin
-                 assignfile(Tx,currentdirectory+separator+'Profiles'+separator+'last');
+                 assignfile(Tx,currentdirectory+separator+'Profiles'+separator+'.config');
                  reset(Tx);
                  readln(Tx,curprofilename);
+                 readln(Tx,s);
+                 ry:=strtoint(s);
+                 rr:=2*ry;
+                 rx:=9*ry div 5;
+                 readln(Tx,s);
+                 form1.Left:=strtoint(s);
+                 readln(Tx,s);
+                 form1.Top:=strtoint(s);
+                 readln(Tx,s);
+                 form1.Width:=strtoint(s);
+                 readln(Tx,s);
+                 form1.Height:=strtoint(s);
+                 readln(Tx,s);
+                 touch:=(strtoint(s)=1);
+                 readln(Tx,s);
+                 drag:=(strtoint(s)=1);
+                 readln(Tx,s);
+                 touch1:=(strtoint(s)=1);
                  closefile(Tx);
                  if not FileExists(curprofilename)
-                    then filexist:=2;//curprofilename:=currentdirectory+separator+'Profiles'+separator+'Beginner.six';
+                    then filexists:=2;
             end
-        else filexist:=2;
-        if filexist=2
+        else filexists:=2;
+        if filexists=2
             then if FileExists(currentdirectory+separator+'Profiles'+separator+'Beginner.six')
                     then curprofilename:=currentdirectory+separator+'Profiles'+separator+'Beginner.six'
-                    else filexist:=0;
-        if filexist>0
+                    else filexists:=0;
+        if filexists>0
            then
                begin
                 assignfile(fpr,curprofilename);
@@ -205,10 +239,20 @@ begin
         nn2:=rec.height;
         destnm:=rec.mines;
         caption:=rec.Name;
+        if touch
+           then form1.MenuOpenButton.Caption:='Open the cell by left button'
+           else form1.MenuOpenButton.Caption:='Open the cell by right button';
+        if drag
+           then form1.MenuDrag.Caption:='Disable dragging'
+           else form1.MenuDrag.Caption:='Enable dragging';
+        form1.MenuDragButton.Enabled:=drag;
+        if touch1
+           then form1.MenuDragButton.Caption:='Drag the field by right button'
+           else form1.MenuDragButton.Caption:='Drag the field by left button';
         form1.Button1Click(form1);
 end;
 
-procedure TForm1.Label4Click(Sender: TObject);
+procedure TForm1.MenuItem11Click(Sender: TObject);
 begin
 
 end;
@@ -224,25 +268,15 @@ begin
      rr:=2*ry;
      rx:=9*ry div 5;
      p:=Timage.Create(Form1);
-     p.Top:=FieldTop;p.Left:=1;
+     p.Top:=FieldTop;p.Left:=0;
      p.Height:=(nn2+1)*3*ry+ry;
      p.Width:=(nn1+1)*2*rx+rx;
 
-      //Updating the form size
-     i2:=FormDx+p.Left+p.Width;
-     if i2>(100-px)*screen.DesktopWidth div 100
-        then i2:=(100-px)*screen.DesktopWidth div 100;
-     form1.Width:=i2;
-     i2:=FormDy+p.Top+p.Height;
-     if i2>(100-py)*screen.DesktopHeight div 100
-        then i2:=(100-py)*screen.DesktopHeight div 100;
-     form1.Height:=i2;
-     //
-     
-
-
-     p.Visible:=not paused;
      p.Parent:=form1;
+
+     p.Visible:=false;
+
+     //p.OnMouseWheel:=form1.OnMouseWheel;
      p.OnMouseDown:=form1.Image1MouseDown;
      p.OnMouseUp:=form1.Image1MouseUp;
      p.OnMousemove:=form1.Image1Mousemove;
@@ -259,19 +293,97 @@ begin
                   ar[i2,j2].show1(true);
                   ar[i2,j2].light:=false;
              end;
+    end;
+
+procedure TForm1.FormMouseWheel(Sender: TObject; Shift: TShiftState;
+  WheelDelta: Integer; MousePos: TPoint; var Handled: Boolean);
+var
+   hp:integer=0;
+   vp:integer=0;
+   hr:integer=1;
+   vr:integer=1;
+
+begin
+  if not paused and (game<2) then
+    begin
+      if (wheeldelta>0) and (ry<=27)
+            then ry:=ry+1
+            else
+                if (wheeldelta<0) and (ry>=2) then ry:=ry-1;
+      hp:=MousePos.x;
+      vp:=MousePos.y;
+      if HorzScrollBar.IsScrollBarVisible
+        then
+            begin
+             hp:=hp+HorzScrollBar.Position-(form1.clientwidth div 2);
+             hr:=p.Width;
+            end;
+      if VertScrollBar.IsScrollBarVisible then
+          begin
+           vp:=vp+VertScrollBar.Position-(form1.clientheight div 2);
+           vr:=p.Height;
+          end;
+      Redraw;
+      p.Visible:=true;
+      afterzoomscroll:=true;
+      toscrollposx:=(hp)*p.Width div hr;
+      toscrollposy:=(vp)*p.Height div vr;
+      if HorzScrollBar.IsScrollBarVisible then HorzScrollBar.Position:=(hp)*p.Width div hr;
+      if VertScrollBar.IsScrollBarVisible then VertScrollBar.Position:=(vp)*p.Height div vr;
+      Timer2.Enabled:=true;
+    end;
 end;
 
-procedure TForm1.MenuItem2Click(Sender: TObject);
+procedure TForm1.MenuZoomInClick(Sender: TObject);
+var
+   hp:integer=1;
+   hr:integer=1;
+   vp:integer=1;
+   vr:integer=1;
 begin
-     if ry<=27 then ry:=ry+2;
+     if ry<=27 then ry:=ry+1;
+     if HorzScrollBar.IsScrollBarVisible and (p.Width>form1.clientwidth)
+         then
+             begin
+              hp:=HorzScrollBar.Position;
+              hr:=p.Width-form1.clientwidth;
+             end;
+     if VertScrollBar.IsScrollBarVisible and (p.Height>form1.ClientHeight)
+         then
+             begin
+              vp:=VertScrollBar.Position;
+              vr:=p.Height-form1.ClientHeight;
+             end;
      Redraw;
+      p.Visible:=true;
+      if HorzScrollBar.IsScrollBarVisible then HorzScrollBar.Position:=hp*(p.Width-form1.clientwidth) div hr;
+      if VertScrollBar.IsScrollBarVisible then VertScrollBar.Position:=vp*(p.Height-form1.ClientHeight) div vr;
+    end;
 
-end;
-
-procedure TForm1.MenuItem3Click(Sender: TObject);
+procedure TForm1.MenuZoomOutClick(Sender: TObject);
+var
+   hp:integer=1;
+   hr:integer=1;
+   vp:integer=1;
+   vr:integer=1;
 begin
-  if ry>=8 then ry:=ry-2;
-  Redraw
+  if ry>=2 then ry:=ry-1;
+  if HorzScrollBar.IsScrollBarVisible and (p.Width>form1.clientwidth)
+         then
+             begin
+              hp:=HorzScrollBar.Position;
+              hr:=p.Width-form1.clientwidth;
+             end;
+     if VertScrollBar.IsScrollBarVisible and (p.Height>form1.ClientHeight)
+         then
+             begin
+              vp:=VertScrollBar.Position;
+              vr:=p.Height-form1.ClientHeight;
+             end;
+     Redraw;
+      p.Visible:=true;
+      if HorzScrollBar.IsScrollBarVisible then HorzScrollBar.Position:=hp*(p.Width-form1.clientwidth) div hr;
+      if VertScrollBar.IsScrollBarVisible then VertScrollBar.Position:=vp*(p.Height-form1.ClientHeight) div vr;
 end;
 
 
@@ -291,7 +403,7 @@ end;
 procedure TForm1.Button1Click(Sender: TObject);
 var i2,j2,k2,l2:integer;
 begin
-  if filexist>0
+  if filexists>0
            then
                begin
                 assignfile(fpr,curprofilename);
@@ -356,16 +468,6 @@ begin
 
      //Draw the playfield and assign the coordinatates (aa,bb) to each of cells
      Redraw;
-     p.Visible:=true;
-     //
-
-     //Center the screen
-     if sender=form1 then
-     begin
-          form1.Left:=px*screen.DesktopWidth div 100;
-          form1.Top:=py*screen.DesktopHeight div 100;
-     end;
-     //
 
      //Connecting the cells
      for i2:=0 to nn1 do
@@ -376,7 +478,7 @@ begin
                                  //we are connecting the cell (i2,j2) with (k2,l2) if they are physically close
                                  if //ar[k2,l2].ingame and
                                  (0<sqr(i2-k2)+sqr(j2-l2)) and
-                                 (sqr(ar[i2,j2].aa-ar[k2,l2].aa)+sqr(ar[i2,j2].bb-ar[k2,l2].bb)<sqr(4*rx)+1)
+                                 (sqr(ar[i2,j2].aa-ar[k2,l2].aa)+sqr(ar[i2,j2].bb-ar[k2,l2].bb)<18*sqr(rx)+1)
                                     then ar[i2,j2].addenv(ar[k2,l2]);
                                  //
                     end;
@@ -386,15 +488,24 @@ begin
      for j2:=0 to nn2
          do ar[nn1,j2].open;
 
-     //game form update
-     label3.Caption:=inttostr(nummin);
+     //the game form update
      paused:=false;
-     button2.Caption:='Pause';
-     label1.Caption:='0';
+     Time:=0;
+     MenuStat.Caption:='Mines: '+inttostr(nummin)+'  '+'Time: '+inttostr(Time);
      game:=0;
-     MenuItem2.Enabled:=true;
-     MenuItem3.Enabled:=true;
+     form1.MenuZoomIn.Enabled:=true;
+     form1.MenuZoomOut.Enabled:=true;
      timer1.Enabled:=true;
+     afterscroll:=true;
+     p.Visible:=true;
+     afterzoomscroll:=true;
+     if HorzScrollbar.IsScrollBarVisible
+       then toscrollposx:=HorzScrollBar.Range;
+     If  VertScrollbar.IsScrollBarVisible
+       then toscrollposy:=VertScrollBar.Range;
+     timer2.Enabled:=true;
+
+
      //
 
 end;
@@ -415,13 +526,13 @@ begin
           2: result:=clgreen;
           3: result:=clred;
           4: result:=clNavy;
-          5: result:=clFuchsia;
+          5: result:=clmaroon;
           6: result:=clteal;
           7: result:=clolive;
           8: result:=clpurple;
           9: result:=clLime-$00003000+$00300000;
           10: result:=$007FFF;
-          0: result:=$A000F0;
+          0: result:=clFuchsia
           else result:=clblack
      end;
 end;
@@ -460,47 +571,47 @@ begin
           '0': Draw0(p.Canvas,ry,aa-5*ry div 10,bb-8*ry div 10);
           'A':  begin
                    Draw1(p.Canvas,ry,aa-10*ry div 10,bb-8*ry div 10);
-                   Draw0(p.Canvas,ry,aa+0*ry div 10,bb-8*ry div 10);
+                   Draw0(p.Canvas,ry,aa+2*ry div 10,bb-8*ry div 10);
                end;
           '1': Draw1(p.Canvas,ry,aa-4*ry div 10,bb-8*ry div 10);
           'B':  begin
-                   Draw1(p.Canvas,ry,aa-8*ry div 10,bb-8*ry div 10);
-                   Draw1(p.Canvas,ry,aa+4*ry div 10,bb-8*ry div 10);
+                   Draw1(p.Canvas,ry,aa-10*ry div 10,bb-8*ry div 10);
+                   Draw1(p.Canvas,ry,aa+2*ry div 10,bb-8*ry div 10);
                end;
           '2': Draw2(p.Canvas,ry,aa-5*ry div 10,bb-8*ry div 10);
           'C':  begin
                     Draw1(p.Canvas,ry,aa-10*ry div 10,bb-8*ry div 10);
-                    Draw2(p.Canvas,ry,aa+0*ry div 10,bb-8*ry div 10);
+                    Draw2(p.Canvas,ry,aa+2*ry div 10,bb-8*ry div 10);
                 end;
           '3': Draw3(p.Canvas,ry,aa-5*ry div 10,bb-8*ry div 10);
           'D': begin
                     Draw1(p.Canvas,ry,aa-10*ry div 10,bb-8*ry div 10);
-                    Draw3(p.Canvas,ry,aa+0*ry div 10,bb-8*ry div 10);
+                    Draw3(p.Canvas,ry,aa+2*ry div 10,bb-8*ry div 10);
                end;
           '4': Draw4(p.Canvas,ry,aa-5*ry div 10,bb-8*ry div 10);
           'E': begin
                     Draw1(p.Canvas,ry,aa-10*ry div 10,bb-8*ry div 10);
-                    Draw4(p.Canvas,ry,aa+0*ry div 10,bb-8*ry div 10);
+                    Draw4(p.Canvas,ry,aa+2*ry div 10,bb-8*ry div 10);
                end;
           '5':  Draw5(p.Canvas,ry,aa-5*ry div 10,bb-8*ry div 10);
           'F':  begin
                      Draw1(p.Canvas,ry,aa-10*ry div 10,bb-8*ry div 10);
-                     Draw5(p.Canvas,ry,aa+1*ry div 10,bb-8*ry div 10);
+                     Draw5(p.Canvas,ry,aa+2*ry div 10,bb-8*ry div 10);
                 end;
            '6': Draw6(p.Canvas,ry,aa-5*ry div 10,bb-8*ry div 10);
            'G': begin
                     Draw1(p.Canvas,ry,aa-10*ry div 10,bb-8*ry div 10);
-                    Draw6(p.Canvas,ry,aa+0*ry div 10,bb-8*ry div 10);
+                    Draw6(p.Canvas,ry,aa+2*ry div 10,bb-8*ry div 10);
                 end;
             '7': Draw7(p.Canvas,ry,aa-5*ry div 10,bb-8*ry div 10);
             'H': begin
                     Draw1(p.Canvas,ry,aa-10*ry div 10,bb-8*ry div 10);
-                    Draw7(p.Canvas,ry,aa+0*ry div 10,bb-8*ry div 10);
+                    Draw7(p.Canvas,ry,aa+2*ry div 10,bb-8*ry div 10);
                  end;
              '8': Draw8(p.Canvas,ry,aa-5*ry div 10,bb-8*ry div 10);
              'I': begin
                     Draw1(p.Canvas,ry,aa-10*ry div 10,bb-8*ry div 10);
-                    Draw8(p.Canvas,ry,aa+0*ry div 10,bb-8*ry div 10);
+                    Draw8(p.Canvas,ry,aa+2*ry div 10,bb-8*ry div 10);
                  end;
              '9': Draw9(p.Canvas,ry,aa-5*ry div 10,bb-8*ry div 10);
           else     ;
@@ -520,15 +631,13 @@ begin
                         begin
                              preshow('X',clBlack);
                              numsel:=numsel-1;
-                             form1.label3.caption:=inttostr(numsel);
+                             form1.MenuStat.caption:='Mines: '+inttostr(numsel)+'  '+'Time: '+inttostr(Time);
                              if mine
                                 then numtruesel:=numtruesel-1;
                              if (numtruesel=0) and (numsel=0)
                                 then
                                     begin
                                          game:=1;
-                                         form1.MenuItem2.Enabled:=false;
-                                         form1.MenuItem3.Enabled:=false;
                                          form1.caption:=form1.caption+': You''ve won';
                                          form1.win;
                                     end;
@@ -538,15 +647,13 @@ begin
                              preshow(' ',clBlack);
                              p.Canvas.Brush.Color:=clwhite;
                              numsel:=numsel+1;
-                             form1.label3.caption:=inttostr(numsel);
+                             form1.MenuStat.caption:='Mines: '+inttostr(numsel)+'  '+'Time: '+inttostr(Time);
                              if mine
                                 then numtruesel:=numtruesel+1;
                              if (numtruesel=0) and (numsel=0)
                                 then
                                     begin
                                          game:=1;
-                                         form1.MenuItem2.Enabled:=false;
-                                         form1.MenuItem3.Enabled:=false;
                                          form1.caption:=form1.caption+': You''ve won';
                                          form1.win;
                                     end;
@@ -646,7 +753,15 @@ procedure TForm1.Image1MouseDown(Sender: TObject; Button: TMouseButton;
   Shift: TShiftState; X, Y: Integer);
 var i,j:integer; xx:Morbit;
 begin
- if game=0
+   if not prescroll and not toscroll and (HorzScrollBar.IsScrollBarVisible or VertScrollBar.IsScrollBarVisible) and
+     drag and (touch1 and (mbleft = button) or not touch1 and (mbright = button))
+      then
+           begin
+                prescroll:=true;
+                scrollx:=x;
+                scrolly:=y
+           end;
+   if (game=0)  and not toscroll and not afterscroll
     then
         begin
              xytoij(x,y,i,j);
@@ -690,7 +805,8 @@ procedure TForm1.Image1MouseUp(Sender: TObject; Button: TMouseButton;
   Shift: TShiftState; X, Y: Integer);
 var i,j:integer; xx:Morbit;
 begin
-if game=0 then
+ if (game=0) and not toscroll and not afterscroll
+  then
    begin
         xytoij(x,y,i,j);
         if (i>=0) and (i<=nn1) and (j>=0) and (j<=nn2)
@@ -721,6 +837,8 @@ if game=0 then
                                       end;
                   end;
    end;
+ toscroll:=false;
+ prescroll:=false;
 end;
 
 procedure tform1.Image1Mousemove(Sender: TObject; Shift: TShiftState; X,
@@ -728,7 +846,47 @@ procedure tform1.Image1Mousemove(Sender: TObject; Shift: TShiftState; X,
 var i,j:integer; xx:Morbit;
 
 begin
-if game=0
+  if (not (ssRight in Shift) and not touch1) or (not (ssLeft in Shift) and touch1)
+    then
+        begin
+             prescroll:=false;
+             toscroll:=false;
+             afterscroll:=false;
+        end;
+  if drag and HorzScrollBar.IsScrollBarVisible and toscroll and (((ssRight in Shift) and not touch1) or ((ssLeft in Shift) and touch1))
+       then
+           begin
+                toscrollposx:=scrollx-x;
+                if toscrollposx<0
+                   then toscrollposx:=0
+                   else
+                     if toscrollposx>HorzScrollBar.Range
+                        then toscrollposx:=HorzScrollBar.Range;
+                Timer2.Enabled:=true;
+           end;
+ if drag and VertScrollBar.IsScrollBarVisible and toscroll and (((ssRight in Shift) and not touch1) or ((ssLeft in Shift) and touch1))
+       then
+           begin
+                toscrollposy:=scrolly-y;
+                if toscrollposy<0
+                   then toscrollposy:=0
+                   else
+                     if toscrollposy>VertScrollBar.Range
+                        then toscrollposy:=VertScrollBar.Range;
+                Timer2.Enabled:=true;
+           end;
+ if drag and (prescroll or afterscroll) and ((scrollx-x>10) or (x-scrollx>10) or (scrolly-y>10) or (y-scrolly>10))
+   and (HorzScrollBar.IsScrollBarVisible or VertScrollBar.IsScrollBarVisible)
+   and (((ssRight in Shift) and not touch1) or ((ssLeft in Shift) and touch1))
+    then
+        begin
+             toscroll:=true;
+             scrollx:=x+HorzScrollBar.Position;
+             scrolly:=y+VertScrollBar.Position;
+             prescroll:=false;
+             afterscroll:=false;
+        end;
+ if game=0
    then
        begin
             xytoij(x,y,i,j);
@@ -743,7 +901,8 @@ if game=0
                                             momentflag:=false;
                                             pressed.show1(true);
                                        end;
-                               if (Shift<>[]) and not ar[i,j].state
+                               if (Shift<>[])  and not toscroll and not afterscroll  and
+                                 not ar[i,j].state
                                   then
                                       begin
                                            momentflag:=false;
@@ -755,7 +914,8 @@ if game=0
                                           Mcell1(xx.away).light:=true;
                                           xx:=xx.next;
                                      end;
-                               if (Shift<>[]) and (ar[i,j].state)
+                               if (Shift<>[]) and   not toscroll and not afterscroll  and
+                                 (ar[i,j].state)
                                   then
                                       begin
                                            xx:=ar[i,j].around;
@@ -772,7 +932,8 @@ if game=0
                                              then Mcell1(xx.away).show1(Mcell1(xx.away).light);
                                           xx:=xx.next;
                                      end;
-                               if(Shift<>[]) and (ar[i,j].state)
+                               if (Shift<>[]) and   not toscroll and not afterscroll  and
+                                 (ar[i,j].state)
                                              then
                                                  begin
                                                       xx:=ar[i,j].around;
@@ -800,22 +961,39 @@ end;
 //Timer event
 procedure TForm1.Timer1Timer(Sender: TObject);
 begin
-     if strtoint(label1.caption)<9999
-        then label1.Caption:=inttostr(strtoint(label1.caption)+1);
+  if Time<9999
+        then
+            begin
+             Time:=Time+1;
+             MenuStat.caption:='Mines: '+inttostr(numsel)+'  '+'Time: '+inttostr(Time);
+            end;
 end;
 //
 
 //Pause-Play button
 procedure TForm1.Button2Click(Sender: TObject);
 begin
-     paused:=not paused;
-     p.Visible:=not paused;
-     if game=0
-        then timer1.Enabled:=not paused;
-     //Button1.Enabled:=not paused;
      if paused
-        then button2.Caption:='Play'
-        else button2.Caption:='Pause'
+       then
+           begin
+            p.Visible:=true;
+            if HorzScrollBar.IsScrollBarVisible
+              then HorzScrollBar.Position:=pausedx;
+            if VertScrollBar.IsScrollBarVisible
+              then VertScrollBar.Position:=pausedy;
+           end
+       else
+           begin
+            if HorzScrollBar.IsScrollBarVisible
+              then pausedx:=HorzScrollBar.Position;
+            if VertScrollBar.IsScrollBarVisible
+              then pausedy:=VertScrollBar.Position;
+            p.Visible:=false;
+           end;
+     MenuZoomIn.Enabled:=paused;
+     MenuZoomOut.Enabled:=paused;
+     if game=0 then timer1.Enabled:=paused;
+     paused:=not paused;
 end;
 
 
@@ -830,8 +1008,8 @@ begin
      p.Canvas.Brush.Color:=clred;
      er.preshow('*',clBlack);
      game:=2;
-     MenuItem2.Enabled:=false;
-     MenuItem3.Enabled:=false;
+     form1.MenuZoomIn.Enabled:=false;
+     form1.MenuZoomOut.Enabled:=false;
      form1.caption:=form1.caption+': You''ve lost';
      p.Canvas.Brush.Color:=clwhite;
      for i:=0 to nn1 do
@@ -856,7 +1034,7 @@ champ,istemp:boolean;ix,jx,kx:integer;
 ar:array [0..10] of TPr;
 begin
   timer1.Enabled:=false;
-  if filexist>0
+  if filexists>0
     then
         begin
              assignfile(fpr,curprofilename);
@@ -874,7 +1052,7 @@ begin
              jx:=0;
              while (jx<ix) and not champ do
              begin
-                if strtoint(label1.Caption)<ar[jx].time
+                if Time<ar[jx].time
                    then
                        begin
                             kx:=jx;
@@ -946,7 +1124,7 @@ begin
                          for jx:=ix-1 downto kx+1 do
                              ar[jx]:=ar[jx-1];
                          ar[kx].Name:=e1.Text;
-                         ar[kx].Time:=strtoint(label1.Caption);
+                         ar[kx].Time:=Time;
                          rewrite(fpr);
                             write(fpr,rec1);
                             if istemp
@@ -966,7 +1144,7 @@ procedure TForm1.NewProfile1Click(Sender: TObject);
 begin
      newprofileresult:=0;
      if timer1.Enabled
-        then button2.Click;
+        then MenuStat.Click;
      f:=Tform.Create(form1);
      f.Caption:='New Profile';
      f.Icon:=form1.Icon;
@@ -983,7 +1161,7 @@ begin
      l1.Height:=19; l2.Height:=19; l3.Height:=19;
      l1.top:=39; l2.top:=59; l3.top:=79;
      l1.Parent:=f; l2.Parent:=f; l3.Parent:=f;
-     e1.left:=110; e2.left:=110; e3.left:=110;
+     e1.left:=125; e2.left:=125; e3.left:=125;
      e1.Height:=19; e2.Height:=19; e3.Height:=19;
      e1.top:=39; e2.top:=59; e3.top:=79;
      e1.Width:=30; e2.Width:=30; e3.Width:=30;
@@ -995,7 +1173,7 @@ begin
      b1.Default:=true;
      b2.Caption:='Cancel';
      b2.Cancel:=true;
-     b1.Left:=161; b2.left:=161;
+     b1.Left:=175; b2.left:=175;
      b1.Top:=39; b2.Top:=74;
      b1.Height:=25; b2.Height:=25;
      b1.Width:=70; b2.width:=70;
@@ -1028,7 +1206,7 @@ begin
          rec.height:=nn2;
          rec.mines:=destnm;
          rec.Name:='Temp';
-         if filexist>0
+         if filexists>0
             then
                 begin
                      curprofilename:=currentdirectory+separator+'Profiles'+separator+'temp.tmp';
@@ -1048,7 +1226,7 @@ end;
 procedure TForm1.loadprofile(Sender: TObject);
 begin
      if timer1.enabled
-        then button2.Click; //Click Pause
+        then MenuStat.Click; //Click Pause
      if opendialog1.execute
         then
             if fileexists(opendialog1.FileName)
@@ -1072,7 +1250,7 @@ end;
 procedure TForm1.TOP111Click(Sender: TObject);
 var ix:byte;
 begin
-  if filexist>0
+  if filexists>0
     then
       begin
            for ix:=0 to 10 do
@@ -1103,12 +1281,26 @@ var Tx:Textfile;
 begin
      if p<>nil
         then ClearField;
-     if filexist>0
+     if filexists>0
         then
             begin
-             assignfile(Tx,currentdirectory+separator+'Profiles'+separator+'last');
+             assignfile(Tx,currentdirectory+separator+'Profiles'+separator+'.config');
              rewrite(Tx);
              writeln(Tx,curprofilename);
+             writeln(Tx,inttostr(ry));
+             writeln(Tx,inttostr(Form1.Left));
+             writeln(Tx,inttostr(Form1.Top));
+             writeln(Tx,inttostr(Form1.Width));
+             writeln(Tx,inttostr(Form1.Height));
+             if touch
+               then writeln(Tx,'1')
+               else writeln(Tx, '0');
+             if drag
+               then writeln(Tx,'1')
+               else writeln(Tx, '0');
+             if touch1
+               then writeln(Tx,'1')
+               else writeln(Tx, '0');
              closefile(Tx);
             end;
 end;
@@ -1134,20 +1326,33 @@ end;
 //
 
 //Invert and revert buttons menu
-procedure TForm1.MenuItem5Click(Sender: TObject);
+procedure TForm1.MenuOpenButtonClick(Sender: TObject);
 begin
    touch:=not touch;
    if touch
-      then form1.MenuItem5.Caption:='Revert buttons'
-      else form1.MenuItem5.Caption:='Invert buttons';
+      then form1.MenuOpenButton.Caption:='Open the cell by left button'
+      else form1.MenuOpenButton.Caption:='Open the cell by right button';
  end;
 
-//Resize behaviour
-procedure TForm1.FormResize(Sender: TObject);
+procedure TForm1.MenuDragButtonClick(Sender: TObject);
 begin
- Timer2.Enabled:=false;
- Timer2.Enabled:=true;
+   touch1:=not touch1;
+   if touch1
+      then form1.MenuDragButton.Caption:='Drag the field by right button'
+      else form1.MenuDragButton.Caption:='Drag the field by left button';
+
 end;
+
+procedure TForm1.MenuDragClick(Sender: TObject);
+begin
+   drag:=not drag;
+   if drag
+      then form1.MenuDrag.Caption:='Disable dragging'
+      else form1.MenuDrag.Caption:='Enable dragging';
+   form1.MenuDragButton.Enabled:=drag;
+end;
+
+//Resize behaviour
 
 procedure TForm1.FormWindowStateChange(Sender: TObject);
 begin
@@ -1159,29 +1364,56 @@ procedure TForm1.Timer2Timer(Sender: TObject);
 var
    tempx:integer=0;
    tempy:integer=0;
+   dx,dy,tp,lf:integer;
 begin
-  if p<>nil then
+  if (p<>nil)  then
       begin
-       if Form1.WindowState=wsMaximized then
+       if (Form1.WindowState=wsMaximized) then
            begin
-            Form1.WindowState:=wsNormal;
-             tempx:=FormDx+p.Left+p.Width;
-             tempy:=FormDy+p.Top+p.Height;
+             tempx:=form1.width;
+             tempy:=form1.height;
+             dx:=form1.Width-form1.ClientWidth;
+             dy:=form1.Height-form1.ClientHeight;
+             lf:=form1.left;
+             tp:=form1.top;
+             if tempx>dx+p.Width
+                then tempx:=dx+p.Width;
+             if tempy>dy+p.Height
+                then tempy:=dy+p.Height;
+             if tempx<470 then tempx:=470;
+             Form1.WindowState:=wsNormal;
+             form1.width:=tempx;
+             form1.height:=tempy;
+             form1.top:=tp;
+             form1.left:=lf;
+             VertScrollbar.Visible:=false;
+             VertScrollbar.Visible:=true;
+             HorzScrollbar.Visible:=false;
+             HorzScrollbar.Visible:=true;
+             afterzoomscroll:=true;
+             if HorzScrollbar.IsScrollBarVisible
+                 then toscrollposx:=HorzScrollBar.Range;
+             If  VertScrollbar.IsScrollBarVisible
+                 then toscrollposy:=VertScrollBar.Range;
            end;
-       if form1.Width>FormDx+p.Left+p.Width
-           then tempx:=FormDx+p.Left+p.Width;
-       if form1.Height>FormDy+p.Top+p.Height
-            then tempy:=FormDy+p.Top+p.Height;
-      end;
-  if tempx>screen.DesktopWidth
-     then tempx:=screen.DesktopWidth;
-  if tempy>screen.DesktopHeight
-     then tempy:=screen.DesktopHeight;
-  if tempx>0
-     then  form1.Width:=tempx;
-  if tempy>0
-     then  form1.Height:=tempy;
+       end;
+
+  if HorzScrollbar.IsScrollBarVisible
+    then
+        if toscroll or afterzoomscroll
+           then HorzScrollbar.Position:=toscrollposx;
+  If  VertScrollbar.IsScrollBarVisible
+    then
+      if toscroll or afterzoomscroll
+        then VertScrollbar.Position:=toscrollposy;
   Timer2.Enabled:=false;
+  if toscroll then
+      begin
+       toscroll:=false;
+       afterscroll:=true;
+      end;
+  if afterzoomscroll then afterzoomscroll:=false;
+
 end;
 //
 
