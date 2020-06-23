@@ -100,12 +100,17 @@ procedure Draw1(canv:TCanvas;rd,a,b:integer);
 begin
      with canv do
           begin
+             // MoveTo(a+0*rd div 10,b+2*rd div 10);
+             // LineTo(a+4*rd div 10,b+2*rd div 10);
+
               MoveTo(a+0*rd div 10,b+2*rd div 10);
-              LineTo(a+3*rd div 10,b+2*rd div 10);
-              LineTo(a+3*rd div 10,b+0*rd div 10);
-              LineTo(a+3*rd div 10,b+15*rd div 10);
+              //LineTo(a+0*rd div 10,b+2*rd div 10);
+              LineTo(a+4*rd div 10,b+0*rd div 10);
+
+              //LineTo(a+4*rd div 10,b+0*rd div 10);
+              LineTo(a+4*rd div 10,b+15*rd div 10);
               LineTo(a+0*rd div 10,b+15*rd div 10);
-              LineTo(a+6*rd div 10,b+15*rd div 10);
+              LineTo(a+8*rd div 10,b+15*rd div 10);
           end;
 
 end;
