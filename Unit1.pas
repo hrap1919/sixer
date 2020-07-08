@@ -6,7 +6,7 @@ interface
 
 uses
   LCLIntf, LCLType, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs,MINES, ExtCtrls, StdCtrls, Menus, Types;
+  Dialogs,MINES, ExtCtrls, StdCtrls, Menus;
 
 const
      FormDy=50; // addition for correct window height
@@ -83,7 +83,7 @@ type
     procedure Button2Click(Sender: TObject);
     procedure Timer2Timer(Sender: TObject);
     procedure win;
-    procedure lose(er:Mcell1);
+    procedure lose;
     procedure NewProfile1Click(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure newprofileok(Sender: TObject);
@@ -131,6 +131,7 @@ curprofilename:string='';  // current profile
 
 
 // Size parameters of cells
+rymax:integer=10;
 ry:integer=10;
 rx:integer=18;
 rr:integer=20;
@@ -164,6 +165,7 @@ destnm:integer;    // number of mines
 pressed:Mcell1; // pressed cell
 paused:boolean;
 ar:array of array of Mcell1;  // array of cells
+er:Mcell1; //exploded bomb
 mm:array of array of boolean; //array of bomb/not bomb
 p:Timage=nil;  // the image of the game field
 game:integer; //game is active if flag=0
@@ -193,7 +195,8 @@ begin
                  reset(Tx);
                  readln(Tx,curprofilename);
                  readln(Tx,s);
-                 ry:=strtoint(s);
+                 rymax:=strtoint(s);
+                 ry:=rymax;
                  rr:=2*ry;
                  rx:=9*ry div 5;
                  readln(Tx,s);
@@ -304,9 +307,9 @@ var
    vr:integer=1;
 
 begin
-  if not paused and (game<2) then
+  if not paused then
     begin
-      if (wheeldelta>0) and (ry<=27)
+      if (wheeldelta>0) and (ry<rymax)
             then ry:=ry+1
             else
                 if (wheeldelta<0) and (ry>=2) then ry:=ry-1;
@@ -341,7 +344,8 @@ var
    vp:integer=1;
    vr:integer=1;
 begin
-     if ry<=27 then ry:=ry+1;
+     if ry<=27 then rymax:=ry+1;
+     ry:=rymax;
      if HorzScrollBar.IsScrollBarVisible and (p.Width>form1.clientwidth)
          then
              begin
@@ -367,7 +371,8 @@ var
    vp:integer=1;
    vr:integer=1;
 begin
-  if ry>=2 then ry:=ry-1;
+  if ry>=2 then rymax:=ry-1;
+  ry:=rymax;
   if HorzScrollBar.IsScrollBarVisible and (p.Width>form1.clientwidth)
          then
              begin
@@ -403,6 +408,7 @@ end;
 procedure TForm1.Button1Click(Sender: TObject);
 var i2,j2,k2,l2:integer;
 begin
+  game:=0;
   if filexists>0
            then
                begin
@@ -492,7 +498,6 @@ begin
      paused:=false;
      Time:=0;
      MenuStat.Caption:='Mines: '+inttostr(nummin)+'  '+'Time: '+inttostr(Time);
-     game:=0;
      form1.MenuZoomIn.Enabled:=true;
      form1.MenuZoomOut.Enabled:=true;
      timer1.Enabled:=true;
@@ -663,7 +668,8 @@ begin
             if mine
                then
                    begin
-                        form1.lose(self);
+                        er:=self;
+                        form1.lose;
                    end
                else
                    begin
@@ -679,6 +685,25 @@ end;
 
 procedure Mcell1.show1(sw:boolean);
 begin
+     if (game=2) and (self=er)
+       then
+         begin
+           p.Canvas.Brush.Color:=clred;
+           preshow('*',clWhite);
+         end
+     else if (game=2) and mine and (self<>er)  and flag
+       then
+           begin
+             p.Canvas.Brush.Color:=clwhite;
+             preshow('*',clBlack);
+           end
+      else if (game=2) and mine and (self<>er)  and not flag
+        then
+           begin
+             p.Canvas.Brush.Color:=clwhite;
+             preshow('*',clred);
+           end
+     else
      if not state
         then
             begin
@@ -1001,17 +1026,18 @@ end;
 //
 
 //Endings
-procedure Tform1.lose(er:Mcell1);  //er is the cell with the expolded bomb
+procedure Tform1.lose;  //er is the cell with the expolded bomb
 var i,j:integer;
 begin
      timer1.Enabled:=false;
      p.Canvas.Brush.Color:=clred;
-     er.preshow('*',clBlack);
+     er.preshow('*',clWhite);
      game:=2;
-     form1.MenuZoomIn.Enabled:=false;
-     form1.MenuZoomOut.Enabled:=false;
+     //form1.MenuZoomIn.Enabled:=false;
+     //form1.MenuZoomOut.Enabled:=false;
      form1.caption:=form1.caption+': You''ve lost';
      p.Canvas.Brush.Color:=clwhite;
+
      for i:=0 to nn1 do
          for j:=0 to nn2 do
              if ar[i,j].mine and (ar[i,j]<>er)
@@ -1287,7 +1313,7 @@ begin
              assignfile(Tx,currentdirectory+separator+'Profiles'+separator+'.config');
              rewrite(Tx);
              writeln(Tx,curprofilename);
-             writeln(Tx,inttostr(ry));
+             writeln(Tx,inttostr(rymax));
              writeln(Tx,inttostr(Form1.Left));
              writeln(Tx,inttostr(Form1.Top));
              writeln(Tx,inttostr(Form1.Width));
