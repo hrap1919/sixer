@@ -145,7 +145,7 @@ touch1:boolean=false; //drug button
 //Drag mode
 drag:boolean=true;
 
-//Scroll temp coordinated
+//Scroll temp coordinates
 pausedx,pausedy:integer;
 scrollx:integer=0;
 scrolly:integer=0;
@@ -154,7 +154,12 @@ toscrollposy:integer=0;
 toscroll:boolean=false;
 prescroll:boolean=false;
 afterscroll:boolean=false;
-afterzoomscroll:boolean=false;
+afterzoomscroll:integer=0;
+ //parameters for afterzoomscroll=2
+ hp:integer=1;
+ hr:integer=1;
+ vp:integer=1;
+ vr:integer=1;
 //
 
 Time:integer=0;
@@ -279,7 +284,6 @@ begin
 
      p.Visible:=false;
 
-     //p.OnMouseWheel:=form1.OnMouseWheel;
      p.OnMouseDown:=form1.Image1MouseDown;
      p.OnMouseUp:=form1.Image1MouseUp;
      p.OnMousemove:=form1.Image1Mousemove;
@@ -301,10 +305,10 @@ begin
 procedure TForm1.FormMouseWheel(Sender: TObject; Shift: TShiftState;
   WheelDelta: Integer; MousePos: TPoint; var Handled: Boolean);
 var
-   hp:integer=0;
-   vp:integer=0;
-   hr:integer=1;
-   vr:integer=1;
+   lhp:integer=0;
+   lvp:integer=0;
+   lhr:integer=1;
+   lvr:integer=1;
 
 begin
   if not paused then
@@ -313,37 +317,38 @@ begin
             then ry:=ry+1
             else
                 if (wheeldelta<0) and (ry>=2) then ry:=ry-1;
-      hp:=MousePos.x;
-      vp:=MousePos.y;
+      lhp:=MousePos.x;
+      lvp:=MousePos.y;
       if HorzScrollBar.IsScrollBarVisible
         then
             begin
-             hp:=hp+HorzScrollBar.Position-(form1.clientwidth div 2);
-             hr:=p.Width;
+             lhp:=lhp+HorzScrollBar.Position-(form1.clientwidth div 2);
+             lhr:=p.Width;
             end;
       if VertScrollBar.IsScrollBarVisible then
           begin
-           vp:=vp+VertScrollBar.Position-(form1.clientheight div 2);
-           vr:=p.Height;
+           lvp:=lvp+VertScrollBar.Position-(form1.clientheight div 2);
+           lvr:=p.Height;
           end;
       Redraw;
       p.Visible:=true;
-      afterzoomscroll:=true;
-      toscrollposx:=(hp)*p.Width div hr;
-      toscrollposy:=(vp)*p.Height div vr;
-      if HorzScrollBar.IsScrollBarVisible then HorzScrollBar.Position:=(hp)*p.Width div hr;
-      if VertScrollBar.IsScrollBarVisible then VertScrollBar.Position:=(vp)*p.Height div vr;
+      afterzoomscroll:=1;
+      toscrollposx:=lhp*p.Width div lhr;
+      toscrollposy:=lvp*p.Height div lvr;
+      if HorzScrollBar.IsScrollBarVisible
+        then HorzScrollBar.Position:=lhp*p.Width div lhr;
+      if VertScrollBar.IsScrollBarVisible
+        then VertScrollBar.Position:=lvp*p.Height div lvr;
       Timer2.Enabled:=true;
     end;
 end;
 
 procedure TForm1.MenuZoomInClick(Sender: TObject);
-var
-   hp:integer=1;
-   hr:integer=1;
-   vp:integer=1;
-   vr:integer=1;
 begin
+     hp:=1;
+     hr:=1;
+     vp:=1;
+     vr:=1;
      if ry<=27 then rymax:=ry+1;
      ry:=rymax;
      if HorzScrollBar.IsScrollBarVisible and (p.Width>form1.clientwidth)
@@ -359,18 +364,19 @@ begin
               vr:=p.Height-form1.ClientHeight;
              end;
      Redraw;
-      p.Visible:=true;
-      if HorzScrollBar.IsScrollBarVisible then HorzScrollBar.Position:=hp*(p.Width-form1.clientwidth) div hr;
-      if VertScrollBar.IsScrollBarVisible then VertScrollBar.Position:=vp*(p.Height-form1.ClientHeight) div vr;
-    end;
+     p.Visible:=true;
+     afterzoomscroll:=2;
+     HorzScrollBar.Position:=hp*(p.Width-form1.clientwidth) div hr;
+     VertScrollBar.Position:=vp*(p.Height-form1.ClientHeight) div vr;
+     Timer2.Enabled:=true;
+end;
 
 procedure TForm1.MenuZoomOutClick(Sender: TObject);
-var
-   hp:integer=1;
-   hr:integer=1;
-   vp:integer=1;
-   vr:integer=1;
 begin
+  hp:=1;
+  hr:=1;
+  vp:=1;
+  vr:=1;
   if ry>=2 then rymax:=ry-1;
   ry:=rymax;
   if HorzScrollBar.IsScrollBarVisible and (p.Width>form1.clientwidth)
@@ -386,12 +392,12 @@ begin
               vr:=p.Height-form1.ClientHeight;
              end;
      Redraw;
-      p.Visible:=true;
-      if HorzScrollBar.IsScrollBarVisible then HorzScrollBar.Position:=hp*(p.Width-form1.clientwidth) div hr;
-      if VertScrollBar.IsScrollBarVisible then VertScrollBar.Position:=vp*(p.Height-form1.ClientHeight) div vr;
+     p.Visible:=true;
+     afterzoomscroll:=2;
+     HorzScrollBar.Position:=hp*(p.Width-form1.clientwidth) div hr;
+     VertScrollBar.Position:=vp*(p.Height-form1.ClientHeight) div vr;
+     Timer2.Enabled:=true;
 end;
-
-
 
 //
 
@@ -503,15 +509,14 @@ begin
      timer1.Enabled:=true;
      afterscroll:=true;
      p.Visible:=true;
-     afterzoomscroll:=true;
-     if HorzScrollbar.IsScrollBarVisible
-       then toscrollposx:=HorzScrollBar.Range;
-     If  VertScrollbar.IsScrollBarVisible
-       then toscrollposy:=VertScrollBar.Range;
+     afterzoomscroll:=2;
+     hp:=1;
+     hr:=1;
+     vp:=1;
+     vr:=1;
      timer2.Enabled:=true;
 
-
-     //
+      //
 
 end;
 
@@ -1416,7 +1421,7 @@ begin
              VertScrollbar.Visible:=true;
              HorzScrollbar.Visible:=false;
              HorzScrollbar.Visible:=true;
-             afterzoomscroll:=true;
+             afterzoomscroll:=1;
              if HorzScrollbar.IsScrollBarVisible
                  then toscrollposx:=HorzScrollBar.Range;
              If  VertScrollbar.IsScrollBarVisible
@@ -1426,19 +1431,23 @@ begin
 
   if HorzScrollbar.IsScrollBarVisible
     then
-        if toscroll or afterzoomscroll
-           then HorzScrollbar.Position:=toscrollposx;
+        if toscroll or (afterzoomscroll=1)
+           then HorzScrollbar.Position:=toscrollposx
+           else if (afterzoomscroll=2)
+             then HorzScrollBar.Position:=hp*(p.Width-form1.clientwidth) div hr;
   If  VertScrollbar.IsScrollBarVisible
     then
-      if toscroll or afterzoomscroll
-        then VertScrollbar.Position:=toscrollposy;
+      if toscroll or (afterzoomscroll=1)
+        then VertScrollbar.Position:=toscrollposy
+        else if (afterzoomscroll=2)
+          then VertScrollBar.Position:=vp*(p.Height-form1.ClientHeight) div vr;
   Timer2.Enabled:=false;
   if toscroll then
       begin
        toscroll:=false;
        afterscroll:=true;
       end;
-  if afterzoomscroll then afterzoomscroll:=false;
+  if (afterzoomscroll>0) then afterzoomscroll:=0;
 
 end;
 //
