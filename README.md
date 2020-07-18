@@ -2,7 +2,7 @@
 
 ![GitHub Logo](/screenshots/1.jpg)
 
-A hexagonal minesweeper game where each digit indicates the number of bombs around the cell at the distance not more than two. Instead of the numbers 10, 11, 12... the "digits" A, B, C, ... are used. As a game it is still playable for me even now as a good time killer. The game process is neither obvious, nor extremely hard.
+A hexagonal minesweeper game where each digit indicates the number of bombs around the cell at the distance not more than two. As a game it is still playable for me even now as a good time killer. The game process is neither obvious, nor extremely hard.
 
 On the picture above the cell marked by "6" is being pressed. Two of the six bombs are already found (marked by "X"). The remaining four are hidden among the seven cells, these cells are marked by white "4" on grey background.
 
