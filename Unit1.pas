@@ -309,10 +309,11 @@ var
    lvp:integer=0;
    lhr:integer=1;
    lvr:integer=1;
-
+   ryold:integer;
 begin
   if not paused then
     begin
+      ryold:=ry;
       if (wheeldelta>0) and (ry<rymax)
             then ry:=ry+1
             else
@@ -330,7 +331,7 @@ begin
            lvp:=lvp+VertScrollBar.Position-(form1.clientheight div 2);
            lvr:=p.Height;
           end;
-      Redraw;
+      if ry<>ryold then Redraw;
       p.Visible:=true;
       afterzoomscroll:=1;
       toscrollposx:=lhp*p.Width div lhr;
