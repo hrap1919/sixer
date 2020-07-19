@@ -1402,8 +1402,8 @@ begin
       begin
        if (Form1.WindowState=wsMaximized) then
            begin
-             tempx:=form1.width;
-             tempy:=form1.height;
+             tempx:=form1.width-1;
+             tempy:=form1.height-1;
              dx:=form1.Width-form1.ClientWidth;
              dy:=form1.Height-form1.ClientHeight;
              lf:=form1.left;
