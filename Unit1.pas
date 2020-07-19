@@ -146,7 +146,6 @@ touch1:boolean=false; //drug button
 drag:boolean=true;
 
 //Scroll temp coordinates
-pausedx,pausedy:integer;
 scrollx:integer=0;
 scrolly:integer=0;
 toscrollposx:integer=0;
@@ -1009,16 +1008,18 @@ begin
            begin
             p.Visible:=true;
             if HorzScrollBar.IsScrollBarVisible
-              then HorzScrollBar.Position:=pausedx;
+              then HorzScrollBar.Position:=toscrollposx;
             if VertScrollBar.IsScrollBarVisible
-              then VertScrollBar.Position:=pausedy;
+              then VertScrollBar.Position:=toscrollposy;
+            afterzoomscroll:=1;
+            Timer2.Enabled:=true;
            end
        else
            begin
             if HorzScrollBar.IsScrollBarVisible
-              then pausedx:=HorzScrollBar.Position;
+              then toscrollposx:=HorzScrollBar.Position;
             if VertScrollBar.IsScrollBarVisible
-              then pausedy:=VertScrollBar.Position;
+              then toscrollposy:=VertScrollBar.Position;
             p.Visible:=false;
            end;
      MenuZoomIn.Enabled:=paused;
