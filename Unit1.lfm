@@ -1,16 +1,15 @@
 object Form1: TForm1
   Left = 980
-  Height = 420
+  Height = 452
   Top = 397
-  Width = 470
+  Width = 500
   HorzScrollBar.Page = 1
   VertScrollBar.Page = 1
   AutoScroll = True
   Caption = 'Form1'
   Color = clBtnFace
-  DesignTimePPI = 120
   Font.Color = clWindowText
-  Font.Height = -14
+  Font.Height = -11
   Font.Name = 'MS Sans Serif'
   Menu = MainMenu1
   OnClose = FormClose
@@ -22,13 +21,13 @@ object Form1: TForm1
   LCLVersion = '2.0.8.0'
   object Timer1: TTimer
     OnTimer = Timer1Timer
-    left = 160
-    top = 40
+    left = 128
+    top = 32
   end
   object MainMenu1: TMainMenu
     ParentBidiMode = False
-    left = 10
-    top = 40
+    left = 8
+    top = 32
     object MenuZoomIn: TMenuItem
       Caption = 'Zoom In'
       OnClick = MenuZoomInClick
@@ -86,13 +85,13 @@ object Form1: TForm1
   object OpenDialog1: TOpenDialog
     Title = 'Open Profile'
     Filter = 'Sixer Profiles|*.six'
-    left = 80
-    top = 40
+    left = 64
+    top = 32
   end
   object Timer2: TTimer
     Interval = 300
     OnTimer = Timer2Timer
-    left = 210
-    top = 40
+    left = 168
+    top = 32
   end
 end

@@ -9,10 +9,9 @@ uses
   Dialogs,MINES, ExtCtrls, StdCtrls, Menus;
 
 const
-     FormDy=50; // addition for correct window height
-     FormDx=20; // addition for correct window width
-     FieldTop=0; //play field Y-coordinate
 
+
+     FieldTop=0; //play field Y-coordinate
 
      // Set separator='/' for Linux
      {$IFDEF UNIX}
@@ -131,10 +130,10 @@ curprofilename:string='';  // current profile
 
 
 // Size parameters of cells
-rymax:integer=10;
-ry:integer=10;
-rx:integer=18;
-rr:integer=20;
+rymax:integer=11;
+ry:integer=11;
+rx:integer=19;
+rr:integer=22;
 //rr=2*ry;
 //rx=9*ry div 5;
 
@@ -1389,7 +1388,6 @@ end;
 
 procedure TForm1.FormWindowStateChange(Sender: TObject);
 begin
-    Timer2.Enabled:=false;
     Timer2.Enabled:=true;
 end;
 
@@ -1429,9 +1427,9 @@ begin
              HorzScrollbar.Visible:=true;
              afterzoomscroll:=1;
              if HorzScrollbar.IsScrollBarVisible
-                 then toscrollposx:=HorzScrollBar.Range;
+                 then toscrollposx:=p.Width-form1.clientwidth;
              If  VertScrollbar.IsScrollBarVisible
-                 then toscrollposy:=VertScrollBar.Range;
+                 then toscrollposy:=p.Height-form1.ClientHeight;
            end;
        end;
 
