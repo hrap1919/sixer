@@ -1403,8 +1403,8 @@ begin
       begin
        if (Form1.WindowState=wsMaximized) then
            begin
-             tempx:=form1.width-1;
-             tempy:=form1.height-1;
+             tempx:=form1.width;
+             tempy:=form1.height;
              dx:=form1.Width-form1.ClientWidth;
              dy:=form1.Height-form1.ClientHeight;
              lf:=form1.left;
@@ -1415,6 +1415,10 @@ begin
                 then tempy:=dy+p.Height;
              if tempx<470 then tempx:=470;
              Form1.WindowState:=wsNormal;
+             {$IFDEF UNIX}
+             form1.width:=tempx-1; //strange linux bug
+             form1.height:=tempy-1;
+             {$ENDIF}
              form1.width:=tempx;
              form1.height:=tempy;
              form1.top:=tp;
