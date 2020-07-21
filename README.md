@@ -1,6 +1,6 @@
 # sixer
 
-![GitHub Logo](/screenshots/1.jpg)
+![GitHub Logo](/screenshots/444.png)
 
 A hexagonal minesweeper game where each digit indicates the number of bombs around the cell at the distance not more than two. As a game it is still playable for me even now as a good time killer. The game process is neither obvious, nor extremely hard.
 
