@@ -1144,9 +1144,9 @@ begin
                          b1.Top:=65;
                          e1.Width:=150;
                          b1.Left:=155;
-                         f.Top:=form1.Top+80;
+                         f.Top:=form1.Top+70;
                          f.Height:=125;f.Width:=215;
-                         f.Left:=form1.Left;
+                         f.Left:=form1.Left+20;
                          b1.OnClick:=newprofileok;
                          f.ShowModal;
                          if istemp
@@ -1213,8 +1213,8 @@ begin
      b2.OnClick:= newprofilecancel;
      b1.Parent:=f; b2.Parent:=f;
      f.AutoSize:=true;
-     f.Top:=form1.Top+50;
-     f.Left:=form1.Left;
+     f.Top:=form1.Top+70;
+     f.Left:=form1.Left+20;
      f.BorderStyle:=bsSingle;
      f.showmodal;
      if newprofileresult=1
@@ -1302,6 +1302,8 @@ begin
                              form2.StringGrid1.Cells[1,ix]:=inttostr(rec.time);
                         end;
            closefile(fpr);
+           form2.Left:=form1.Left+20;
+           form2.Top:=form1.Top+70;
            form2.showmodal;
       end;
 end;
