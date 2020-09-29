@@ -114,7 +114,7 @@ var
 
 fpr: file of TPR;
 
-// 1 - normally intsalled, 2 - first start, 0 - config is not available
+// 1 - normally intsalled, 2 - first start, 0 - not properly installed
 filexists:integer=1;
 //
 
@@ -438,7 +438,14 @@ begin
      setlength(ar,nn1+1,nn2+1);
      setlength(mm,nn1+1,nn2+1);
 
-          //stupid randomization of bombs
+   if (filexists=2) then
+     begin
+      Form1.Top:=150;
+      Form1.Left:=150;
+      Timer2.Enabled:=true;
+     end; //initial sizing
+
+   //stupid randomization of bombs
      randomize;
      nummin:=0;
      for i2:=0 to nn1 do
@@ -1433,7 +1440,27 @@ begin
              If  VertScrollbar.IsScrollBarVisible
                  then toscrollposy:=p.Height-form1.ClientHeight;
            end;
-       end;
+       if (filexists=2) then
+           begin
+             tempx:=form1.width;
+             tempy:=form1.height;
+             dx:=form1.Width-form1.ClientWidth;
+             dy:=form1.Height-form1.ClientHeight;
+             if tempx>dx+p.Width
+                then tempx:=dx+p.Width;
+             if tempy>dy+p.Height
+                then tempy:=dy+p.Height;
+             if tempx<470 then tempx:=470;
+             {$IFDEF UNIX}
+             form1.width:=tempx-1; //strange linux bug
+             form1.height:=tempy-1;
+             {$ENDIF}
+             form1.width:=tempx;
+             form1.height:=tempy;
+             filexists:=1;
+             afterzoomscroll:=1;
+           end;
+      end;
 
   if HorzScrollbar.IsScrollBarVisible
     then
