@@ -43,11 +43,13 @@ type
   { TForm1 }
 
   TForm1 = class(TForm)
-    MenuItem1: TMenuItem;
-    MenuItem10: TMenuItem;
+      Label1: TLabel;
+      Label2: TLabel;
+    MenuExit: TMenuItem;
+    MenuSpace: TMenuItem;
     MenuZoomIn: TMenuItem;
     MenuDrag: TMenuItem;
-    MenuItem4: TMenuItem;
+    MenuMouse: TMenuItem;
     MenuOpenButton: TMenuItem;
     MenuStat: TMenuItem;
     MenuDragButton: TMenuItem;
@@ -71,19 +73,20 @@ type
     procedure Image1Mousemove
      (Sender: TObject; Shift: TShiftState; X,
       Y: Integer);
-    procedure Button1Click(Sender: TObject);
+    procedure NewClick(Sender: TObject);
     procedure FormShow(Sender: TObject);
     procedure MenuItem11Click(Sender: TObject);
     procedure MenuZoomInClick(Sender: TObject);
     procedure MenuZoomOutClick(Sender: TObject);
     procedure MenuOpenButtonClick(Sender: TObject);
     procedure MenuDragButtonClick(Sender: TObject);
+    procedure OptionsClick(Sender: TObject);
     procedure Timer1Timer(Sender: TObject);
-    procedure Button2Click(Sender: TObject);
+    procedure PauseClick(Sender: TObject);
     procedure Timer2Timer(Sender: TObject);
     procedure win;
     procedure lose;
-    procedure NewProfile1Click(Sender: TObject);
+    procedure NewProfileClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure newprofileok(Sender: TObject);
     procedure loadprofile(Sender: TObject);
@@ -246,16 +249,16 @@ begin
         destnm:=rec.mines;
         caption:=rec.Name;
         if touch
-           then form1.MenuOpenButton.Caption:='Open the cell by left button'
-           else form1.MenuOpenButton.Caption:='Open the cell by right button';
+           then form1.MenuOpenButton.Caption:='Open the cell by the left button'
+           else form1.MenuOpenButton.Caption:='Open the cell by the right button';
         if drag
            then form1.MenuDrag.Caption:='Disable dragging'
            else form1.MenuDrag.Caption:='Enable dragging';
         form1.MenuDragButton.Enabled:=drag;
         if touch1
-           then form1.MenuDragButton.Caption:='Drag the field by right button'
-           else form1.MenuDragButton.Caption:='Drag the field by left button';
-        form1.Button1Click(form1);
+           then form1.MenuDragButton.Caption:='Drag the field by the right button'
+           else form1.MenuDragButton.Caption:='Drag the field by the left button';
+        form1.NewClick(form1);
 end;
 
 procedure TForm1.MenuItem11Click(Sender: TObject);
@@ -410,7 +413,7 @@ begin
              Mcell1.clear(ar[i,j]);
 end;
 
-procedure TForm1.Button1Click(Sender: TObject);
+procedure TForm1.NewClick(Sender: TObject);
 var i2,j2,k2,l2:integer;
 begin
   game:=0;
@@ -1007,7 +1010,7 @@ end;
 //
 
 //Pause-Play button
-procedure TForm1.Button2Click(Sender: TObject);
+procedure TForm1.PauseClick(Sender: TObject);
 begin
      if paused
        then
@@ -1032,6 +1035,8 @@ begin
      MenuZoomOut.Enabled:=paused;
      if game=0 then timer1.Enabled:=paused;
      paused:=not paused;
+     Label1.Visible:=paused;
+     Label2.Visible:=paused
 end;
 
 
@@ -1179,7 +1184,7 @@ end;
 //
 
 //New Profile form
-procedure TForm1.NewProfile1Click(Sender: TObject);
+procedure TForm1.NewProfileClick(Sender: TObject);
 begin
      newprofileresult:=0;
      if timer1.Enabled
@@ -1255,7 +1260,7 @@ begin
                      closefile(fpr);
                 end;
           f.Free;
-            form1.Button1Click(form1)
+            form1.NewClick(form1)
        end
       else f.Free;
 end;
@@ -1280,7 +1285,7 @@ begin
                                    caption:=rec.Name;
                         closefile(fpr);
                         curprofilename:=opendialog1.FileName;
-                        form1.Button1Click(form1);
+                        form1.NewClick(form1);
                    end;
 end;
 //
@@ -1371,17 +1376,23 @@ procedure TForm1.MenuOpenButtonClick(Sender: TObject);
 begin
    touch:=not touch;
    if touch
-      then form1.MenuOpenButton.Caption:='Open the cell by left button'
-      else form1.MenuOpenButton.Caption:='Open the cell by right button';
+      then form1.MenuOpenButton.Caption:='Open the cell by the left button'
+      else form1.MenuOpenButton.Caption:='Open the cell by the right button';
  end;
 
 procedure TForm1.MenuDragButtonClick(Sender: TObject);
 begin
    touch1:=not touch1;
    if touch1
-      then form1.MenuDragButton.Caption:='Drag the field by right button'
-      else form1.MenuDragButton.Caption:='Drag the field by left button';
+      then form1.MenuDragButton.Caption:='Drag the field by the right button'
+      else form1.MenuDragButton.Caption:='Drag the field by the left button';
 
+end;
+
+procedure TForm1.OptionsClick(Sender: TObject);
+begin
+  if not paused
+    then MenuStat.Click;
 end;
 
 procedure TForm1.MenuDragClick(Sender: TObject);

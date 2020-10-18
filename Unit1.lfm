@@ -1,12 +1,14 @@
 object Form1: TForm1
-  Left = 354
+  Left = 355
   Height = 500
-  Top = 127
+  Top = 131
   Width = 600
-  HorzScrollBar.Page = 1
-  VertScrollBar.Page = 1
+  HorzScrollBar.Page = 192
+  VertScrollBar.Page = 41
   AutoScroll = True
   Caption = 'Form1'
+  ClientHeight = 480
+  ClientWidth = 600
   Color = clBtnFace
   Font.Color = clWindowText
   Font.Height = -11
@@ -19,6 +21,35 @@ object Form1: TForm1
   OnWindowStateChange = FormWindowStateChange
   Position = poDefault
   LCLVersion = '2.0.8.0'
+  object Label1: TLabel
+    Left = 0
+    Height = 16
+    Top = 5
+    Width = 127
+    Caption = ' The game is paused'
+    Font.CharSet = RUSSIAN_CHARSET
+    Font.Color = clBlack
+    Font.Height = -13
+    Font.Name = 'MS Sans Serif'
+    Font.Pitch = fpVariable
+    Font.Quality = fqDraft
+    ParentColor = False
+    ParentFont = False
+    Visible = False
+  end
+  object Label2: TLabel
+    Left = 0
+    Height = 16
+    Top = 25
+    Width = 192
+    Caption = ' Click the timer button to proceed'
+    Font.Color = clWindowText
+    Font.Height = -13
+    Font.Name = 'MS Sans Serif'
+    ParentColor = False
+    ParentFont = False
+    Visible = False
+  end
   object Timer1: TTimer
     OnTimer = Timer1Timer
     left = 128
@@ -38,9 +69,10 @@ object Form1: TForm1
     end
     object Options: TMenuItem
       Caption = 'Options'
+      OnClick = OptionsClick
       object NewProfile1: TMenuItem
         Caption = 'New Profile'
-        OnClick = NewProfile1Click
+        OnClick = NewProfileClick
       end
       object LoadProfile1: TMenuItem
         Caption = 'Load Profile'
@@ -50,10 +82,10 @@ object Form1: TForm1
         Caption = 'TOP 11'
         OnClick = TOP111Click
       end
-      object MenuItem4: TMenuItem
+      object MenuMouse: TMenuItem
         Caption = 'Mouse'
         object MenuOpenButton: TMenuItem
-          Caption = 'Open the cell by right button'
+          Caption = 'Open the cell by the right button'
           OnClick = MenuOpenButtonClick
         end
         object MenuDrag: TMenuItem
@@ -61,25 +93,25 @@ object Form1: TForm1
           OnClick = MenuDragClick
         end
         object MenuDragButton: TMenuItem
-          Caption = 'Drag the field by right button'
+          Caption = 'Drag the field by the right button'
           OnClick = MenuDragButtonClick
         end
       end
-      object MenuItem1: TMenuItem
+      object MenuExit: TMenuItem
         Caption = 'Exit'
         OnClick = N2Click
       end
     end
-    object MenuItem10: TMenuItem
+    object MenuSpace: TMenuItem
       Caption = '   '
     end
     object MenuNew: TMenuItem
       Caption = 'New'
-      OnClick = Button1Click
+      OnClick = NewClick
     end
     object MenuStat: TMenuItem
       Caption = 'Mines: 0  Time:0'
-      OnClick = Button2Click
+      OnClick = PauseClick
     end
   end
   object OpenDialog1: TOpenDialog
